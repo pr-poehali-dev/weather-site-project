@@ -16,9 +16,30 @@ interface WeatherData {
 interface ForecastDay {
   day: string;
   temp: number;
+  tempMin: number;
   condition: string;
   icon: string;
 }
+
+interface HourlyData {
+  time: string;
+  temp: number;
+  rain: number;
+}
+
+const WEATHER_API = 'https://functions.poehali.dev/2e1fb99e-adfb-4041-b171-a245be920e5c';
+const GEOCODE_API = 'https://functions.poehali.dev/ab12ed1f-a6b0-4146-8827-fbee7e272262';
+
+const getWeatherIcon = (code: number): string => {
+  if (code === 0) return 'Sun';
+  if (code <= 3) return 'CloudSun';
+  if (code <= 48) return 'Cloud';
+  if (code <= 67) return 'CloudRain';
+  if (code <= 77) return 'CloudSnow';
+  if (code <= 82) return 'CloudRain';
+  if (code <= 86) return 'CloudSnow';
+  return 'CloudLightning';
+};
 
 const Index = () => {
   const [weather, setWeather] = useState<WeatherData>({
@@ -31,42 +52,77 @@ const Index = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const [forecast, setForecast] = useState<ForecastDay[]>([]);
+  const [hourlyData, setHourlyData] = useState<HourlyData[]>([]);
+  const [coords, setCoords] = useState({ lat: 55.7558, lon: 37.6173 });
 
   useEffect(() => {
+    const fetchWeather = async (lat: number, lon: number) => {
+      try {
+        const [weatherRes, geoRes] = await Promise.all([
+          fetch(`${WEATHER_API}?lat=${lat}&lon=${lon}`),
+          fetch(`${GEOCODE_API}?lat=${lat}&lon=${lon}`)
+        ]);
+
+        const weatherData = await weatherRes.json();
+        const geoData = await geoRes.json();
+
+        setWeather({
+          temp: weatherData.current.temp,
+          feelsLike: weatherData.current.feelsLike,
+          humidity: weatherData.current.humidity,
+          windSpeed: weatherData.current.windSpeed,
+          condition: weatherData.current.condition,
+          location: geoData.city || 'Москва',
+        });
+
+        const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+        const forecastDays = weatherData.daily.time.map((dateStr: string, i: number) => {
+          const date = new Date(dateStr);
+          const dayName = i === 0 ? 'Сегодня' : days[date.getDay()];
+          const code = weatherData.daily.weatherCode[i];
+          return {
+            day: dayName,
+            temp: weatherData.daily.tempMax[i],
+            tempMin: weatherData.daily.tempMin[i],
+            condition: weatherData.current.condition,
+            icon: getWeatherIcon(code),
+          };
+        });
+        setForecast(forecastDays);
+
+        const hourly = weatherData.hourly.time.slice(0, 8).map((timeStr: string, i: number) => {
+          const hour = new Date(timeStr).getHours();
+          return {
+            time: `${hour.toString().padStart(2, '0')}:00`,
+            temp: weatherData.hourly.temperature[i],
+            rain: weatherData.hourly.precipitation[i] || 0,
+          };
+        });
+        setHourlyData(hourly);
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Weather fetch error:', error);
+        setLoading(false);
+      }
+    };
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        () => {
-          setTimeout(() => setLoading(false), 1000);
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCoords({ lat: latitude, lon: longitude });
+          fetchWeather(latitude, longitude);
         },
         () => {
-          setLoading(false);
+          fetchWeather(coords.lat, coords.lon);
         }
       );
     } else {
-      setLoading(false);
+      fetchWeather(coords.lat, coords.lon);
     }
   }, []);
-
-  const forecast: ForecastDay[] = [
-    { day: 'Пн', temp: 26, condition: 'Ясно', icon: 'Sun' },
-    { day: 'Вт', temp: 24, condition: 'Облачно', icon: 'Cloud' },
-    { day: 'Ср', temp: 22, condition: 'Дождь', icon: 'CloudRain' },
-    { day: 'Чт', temp: 23, condition: 'Переменно', icon: 'CloudSun' },
-    { day: 'Пт', temp: 25, condition: 'Ясно', icon: 'Sun' },
-    { day: 'Сб', temp: 27, condition: 'Жарко', icon: 'Sun' },
-    { day: 'Вс', temp: 26, condition: 'Облачно', icon: 'Cloud' },
-  ];
-
-  const hourlyData = [
-    { time: '00:00', temp: 20, rain: 10 },
-    { time: '03:00', temp: 19, rain: 30 },
-    { time: '06:00', temp: 18, rain: 60 },
-    { time: '09:00', temp: 21, rain: 80 },
-    { time: '12:00', temp: 24, rain: 50 },
-    { time: '15:00', temp: 26, rain: 20 },
-    { time: '18:00', temp: 23, rain: 5 },
-    { time: '21:00', temp: 21, rain: 0 },
-  ];
 
   const news = [
     {
@@ -187,8 +243,10 @@ const Index = () => {
                   >
                     <p className="text-white font-semibold mb-3">{day.day}</p>
                     <Icon name={day.icon as any} className="text-white mx-auto mb-3 animate-pulse-glow" size={40} />
-                    <p className="text-3xl font-bold text-white mb-2">{day.temp}°</p>
-                    <p className="text-white/60 text-sm">{day.condition}</p>
+                    <p className="text-3xl font-bold text-white mb-1">{day.temp}°</p>
+                    {day.tempMin !== undefined && (
+                      <p className="text-white/60 text-sm">↓ {day.tempMin}°</p>
+                    )}
                   </div>
                 ))}
               </div>

@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Get weather for Moscow",
+      "method": "GET",
+      "path": "/?lat=55.7558&lon=37.6173",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "current": {
+          "temp": "number",
+          "feelsLike": "number",
+          "humidity": "number",
+          "windSpeed": "number",
+          "condition": "string"
+        },
+        "hourly": {
+          "time": "array",
+          "temperature": "array"
+        },
+        "daily": {
+          "time": "array",
+          "tempMax": "array"
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

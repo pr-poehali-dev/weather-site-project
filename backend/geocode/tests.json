@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Get city name for Moscow coordinates",
+      "method": "GET",
+      "path": "/?lat=55.7558&lon=37.6173",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "city": "string",
+        "fullName": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
