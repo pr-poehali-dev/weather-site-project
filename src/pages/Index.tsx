@@ -67,8 +67,11 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<City[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [favorites, setFavorites] = useState<City[]>([]);
+  const [showFavorites, setShowFavorites] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const favoritesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
@@ -136,12 +139,20 @@ const Index = () => {
     } else {
       fetchWeather(coords.lat, coords.lon);
     }
+
+    const savedFavorites = localStorage.getItem('favoriteCities');
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
   }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
+      }
+      if (favoritesRef.current && !favoritesRef.current.contains(event.target as Node)) {
+        setShowFavorites(false);
       }
     };
 
@@ -174,9 +185,28 @@ const Index = () => {
     }, 300);
   };
 
+  const toggleFavorite = (city: City) => {
+    const isFavorite = favorites.some(f => f.lat === city.lat && f.lon === city.lon);
+    let newFavorites: City[];
+    
+    if (isFavorite) {
+      newFavorites = favorites.filter(f => !(f.lat === city.lat && f.lon === city.lon));
+    } else {
+      newFavorites = [...favorites, city];
+    }
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('favoriteCities', JSON.stringify(newFavorites));
+  };
+
+  const isCityFavorite = (city: City) => {
+    return favorites.some(f => f.lat === city.lat && f.lon === city.lon);
+  };
+
   const selectCity = async (city: City) => {
     setSearchQuery(city.displayName);
     setShowDropdown(false);
+    setShowFavorites(false);
     setLoading(true);
     setCoords({ lat: city.lat, lon: city.lon });
 
@@ -190,7 +220,7 @@ const Index = () => {
         humidity: weatherData.current.humidity,
         windSpeed: weatherData.current.windSpeed,
         condition: weatherData.current.condition,
-        location: city.name,
+        location: city.displayName,
       });
 
       const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
@@ -253,33 +283,109 @@ const Index = () => {
           <p className="text-white/80 text-lg mb-6">Точные данные в режиме реального времени</p>
           
           <div className="max-w-2xl mx-auto relative" ref={dropdownRef}>
-            <div className="relative">
-              <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
-              <input
-                type="text"
-                placeholder="Поиск города..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
-                className="w-full pl-12 pr-4 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-all text-lg"
-              />
+            <div className="relative flex gap-2">
+              <div className="flex-1 relative">
+                <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+                <input
+                  type="text"
+                  placeholder="Поиск города..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                  className="w-full pl-12 pr-4 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-all text-lg"
+                />
+              </div>
+              <button
+                onClick={() => setShowFavorites(!showFavorites)}
+                className="px-6 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl hover:bg-white/30 transition-all relative"
+              >
+                <Icon name="Star" className={favorites.length > 0 ? "text-yellow-300 fill-yellow-300" : "text-white"} size={24} />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {favorites.length}
+                  </span>
+                )}
+              </button>
             </div>
             
             {showDropdown && searchResults.length > 0 && (
               <div className="absolute top-full mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden z-50 animate-scale-in">
                 {searchResults.map((city, index) => (
-                  <button
+                  <div
                     key={index}
-                    onClick={() => selectCity(city)}
-                    className="w-full px-6 py-4 text-left hover:bg-primary/10 transition-colors border-b border-gray-200 last:border-0 flex items-center gap-3"
+                    className="w-full px-6 py-4 hover:bg-primary/10 transition-colors border-b border-gray-200 last:border-0 flex items-center justify-between"
                   >
-                    <Icon name="MapPin" className="text-primary" size={20} />
-                    <div>
-                      <p className="font-medium text-gray-900">{city.name}</p>
-                      <p className="text-sm text-gray-600">{city.country}</p>
-                    </div>
-                  </button>
+                    <button
+                      onClick={() => selectCity(city)}
+                      className="flex items-center gap-3 flex-1 text-left"
+                    >
+                      <Icon name="MapPin" className="text-primary" size={20} />
+                      <div>
+                        <p className="font-medium text-gray-900">{city.name}</p>
+                        <p className="text-sm text-gray-600">{city.country}</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(city);
+                      }}
+                      className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                    >
+                      <Icon
+                        name="Star"
+                        className={isCityFavorite(city) ? "text-yellow-500 fill-yellow-500" : "text-gray-400"}
+                        size={20}
+                      />
+                    </button>
+                  </div>
                 ))}
+              </div>
+            )}
+
+            {showFavorites && (
+              <div ref={favoritesRef} className="absolute top-full mt-2 right-0 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden z-50 animate-scale-in">
+                <div className="p-4 border-b border-gray-200 bg-primary/5">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Icon name="Star" className="text-yellow-500 fill-yellow-500" size={20} />
+                    Избранные города
+                  </h3>
+                </div>
+                {favorites.length === 0 ? (
+                  <div className="p-6 text-center text-gray-600">
+                    <p>Нет избранных городов</p>
+                    <p className="text-sm mt-2">Добавьте города через поиск</p>
+                  </div>
+                ) : (
+                  <div className="max-h-96 overflow-y-auto">
+                    {favorites.map((city, index) => (
+                      <div
+                        key={index}
+                        className="px-6 py-4 hover:bg-primary/10 transition-colors border-b border-gray-200 last:border-0 flex items-center justify-between"
+                      >
+                        <button
+                          onClick={() => selectCity(city)}
+                          className="flex items-center gap-3 flex-1 text-left"
+                        >
+                          <Icon name="MapPin" className="text-primary" size={20} />
+                          <div>
+                            <p className="font-medium text-gray-900">{city.name}</p>
+                            <p className="text-sm text-gray-600">{city.country}</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(city);
+                          }}
+                          className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                        >
+                          <Icon name="Trash2" className="text-red-500" size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
