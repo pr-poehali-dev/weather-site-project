@@ -69,6 +69,7 @@ const Index = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [favorites, setFavorites] = useState<City[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
@@ -144,6 +145,11 @@ const Index = () => {
     if (savedFavorites) {
       setFavorites(JSON.parse(savedFavorites));
     }
+
+    const savedTheme = localStorage.getItem('weatherTheme');
+    if (savedTheme) {
+      setIsDarkTheme(savedTheme === 'dark');
+    }
   }, []);
 
   useEffect(() => {
@@ -201,6 +207,12 @@ const Index = () => {
 
   const isCityFavorite = (city: City) => {
     return favorites.some(f => f.lat === city.lat && f.lon === city.lon);
+  };
+
+  const toggleTheme = () => {
+    const newTheme = !isDarkTheme;
+    setIsDarkTheme(newTheme);
+    localStorage.setItem('weatherTheme', newTheme ? 'dark' : 'light');
   };
 
   const selectCity = async (city: City) => {
@@ -273,33 +285,50 @@ const Index = () => {
     },
   ];
 
+  const bgGradient = isDarkTheme
+    ? 'bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316]'
+    : 'bg-gradient-to-br from-[#FEF7CD] via-[#FDE1D3] to-[#FFDEE2]';
+  
+  const textColor = isDarkTheme ? 'text-white' : 'text-gray-900';
+  const textSecondary = isDarkTheme ? 'text-white/80' : 'text-gray-700';
+  const cardBg = isDarkTheme ? 'bg-white/10' : 'bg-white/80';
+  const borderColor = isDarkTheme ? 'border-white/20' : 'border-gray-200';
+  const inputBg = isDarkTheme ? 'bg-white/20 border-white/30' : 'bg-white/60 border-gray-300';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
+    <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
-        <header className="text-center py-8 animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
+        <header className="text-center py-8 animate-fade-in relative">
+          <button
+            onClick={toggleTheme}
+            className={`absolute top-4 right-4 p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
+          >
+            <Icon name={isDarkTheme ? "Sun" : "Moon"} className={textColor} size={24} />
+          </button>
+
+          <h1 className={`text-5xl md:text-7xl font-bold ${textColor} mb-4 tracking-tight`}>
             Прогноз Погоды
           </h1>
-          <p className="text-white/80 text-lg mb-6">Точные данные в режиме реального времени</p>
+          <p className={`${textSecondary} text-lg mb-6`}>Точные данные в режиме реального времени</p>
           
           <div className="max-w-2xl mx-auto relative" ref={dropdownRef}>
             <div className="relative flex gap-2">
               <div className="flex-1 relative">
-                <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+                <Icon name="Search" className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDarkTheme ? 'text-white/60' : 'text-gray-600'}`} size={20} />
                 <input
                   type="text"
                   placeholder="Поиск города..."
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-all text-lg"
+                  className={`w-full pl-12 pr-4 py-4 ${inputBg} backdrop-blur-xl border-2 rounded-2xl ${textColor} ${isDarkTheme ? 'placeholder-white/60' : 'placeholder-gray-500'} focus:outline-none ${isDarkTheme ? 'focus:border-white/50' : 'focus:border-gray-400'} transition-all text-lg`}
                 />
               </div>
               <button
                 onClick={() => setShowFavorites(!showFavorites)}
-                className="px-6 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl hover:bg-white/30 transition-all relative"
+                className={`px-6 py-4 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl hover:bg-white/30 transition-all relative`}
               >
-                <Icon name="Star" className={favorites.length > 0 ? "text-yellow-300 fill-yellow-300" : "text-white"} size={24} />
+                <Icon name="Star" className={favorites.length > 0 ? "text-yellow-300 fill-yellow-300" : textColor} size={24} />
                 {favorites.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {favorites.length}
@@ -392,53 +421,53 @@ const Index = () => {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 bg-white/10 backdrop-blur-xl border-white/20 p-8 animate-scale-in">
+          <Card className={`lg:col-span-2 ${cardBg} backdrop-blur-xl ${borderColor} p-8 animate-scale-in`}>
             <div className="flex items-start justify-between mb-8">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Icon name="MapPin" className="text-white" size={24} />
-                  <h2 className="text-2xl font-semibold text-white">{weather.location}</h2>
+                  <Icon name="MapPin" className={textColor} size={24} />
+                  <h2 className={`text-2xl font-semibold ${textColor}`}>{weather.location}</h2>
                 </div>
-                <p className="text-white/60">
+                <p className={textSecondary}>
                   {loading ? 'Определяем местоположение...' : 'Сегодня'}
                 </p>
               </div>
-              <Badge className="bg-white/20 text-white border-none">Сейчас</Badge>
+              <Badge className={`${cardBg} ${textColor} border-none`}>Сейчас</Badge>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <Icon name="CloudSun" className="text-white animate-float" size={80} />
+                  <Icon name="CloudSun" className={`${textColor} animate-float`} size={80} />
                   <div>
-                    <div className="text-7xl font-bold text-white">{weather.temp}°</div>
-                    <p className="text-white/80 text-lg">{weather.condition}</p>
+                    <div className={`text-7xl font-bold ${textColor}`}>{weather.temp}°</div>
+                    <p className={`${textSecondary} text-lg`}>{weather.condition}</p>
                   </div>
                 </div>
-                <p className="text-white/60">Ощущается как {weather.feelsLike}°</p>
+                <p className={textSecondary}>Ощущается как {weather.feelsLike}°</p>
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 bg-white/10 rounded-2xl backdrop-blur-sm transition-all hover:bg-white/20">
-                  <Icon name="Droplets" className="text-white" size={32} />
+                <div className={`flex items-center gap-4 p-4 ${cardBg} rounded-2xl backdrop-blur-sm transition-all hover:bg-white/30`}>
+                  <Icon name="Droplets" className={textColor} size={32} />
                   <div>
-                    <p className="text-white/60 text-sm">Влажность</p>
-                    <p className="text-2xl font-semibold text-white">{weather.humidity}%</p>
+                    <p className={`${textSecondary} text-sm`}>Влажность</p>
+                    <p className={`text-2xl font-semibold ${textColor}`}>{weather.humidity}%</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 p-4 bg-white/10 rounded-2xl backdrop-blur-sm transition-all hover:bg-white/20">
-                  <Icon name="Wind" className="text-white" size={32} />
+                <div className={`flex items-center gap-4 p-4 ${cardBg} rounded-2xl backdrop-blur-sm transition-all hover:bg-white/30`}>
+                  <Icon name="Wind" className={textColor} size={32} />
                   <div>
-                    <p className="text-white/60 text-sm">Ветер</p>
-                    <p className="text-2xl font-semibold text-white">{weather.windSpeed} км/ч</p>
+                    <p className={`${textSecondary} text-sm`}>Ветер</p>
+                    <p className={`text-2xl font-semibold ${textColor}`}>{weather.windSpeed} км/ч</p>
                   </div>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6 animate-scale-in">
-            <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+          <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-scale-in`}>
+            <h3 className={`text-xl font-semibold ${textColor} mb-4 flex items-center gap-2`}>
               <Icon name="Newspaper" size={24} />
               Новости погоды
             </h3>
@@ -446,29 +475,29 @@ const Index = () => {
               {news.map((item, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all cursor-pointer"
+                  className={`p-4 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer`}
                 >
                   <Badge className="bg-accent/80 text-white border-none mb-2 text-xs">
                     {item.category}
                   </Badge>
-                  <p className="text-white font-medium mb-1">{item.title}</p>
-                  <p className="text-white/60 text-sm">{item.time}</p>
+                  <p className={`${textColor} font-medium mb-1`}>{item.title}</p>
+                  <p className={`${textSecondary} text-sm`}>{item.time}</p>
                 </div>
               ))}
             </div>
           </Card>
         </div>
 
-        <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6 animate-fade-in">
+        <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-fade-in`}>
           <Tabs defaultValue="week" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white/10 mb-6">
-              <TabsTrigger value="week" className="data-[state=active]:bg-white/20">
+            <TabsList className={`grid w-full grid-cols-3 ${cardBg} mb-6`}>
+              <TabsTrigger value="week" className={`${isDarkTheme ? 'data-[state=active]:bg-white/20' : 'data-[state=active]:bg-white'} ${textColor}`}>
                 Неделя
               </TabsTrigger>
-              <TabsTrigger value="hourly" className="data-[state=active]:bg-white/20">
+              <TabsTrigger value="hourly" className={`${isDarkTheme ? 'data-[state=active]:bg-white/20' : 'data-[state=active]:bg-white'} ${textColor}`}>
                 Почасовой
               </TabsTrigger>
-              <TabsTrigger value="map" className="data-[state=active]:bg-white/20">
+              <TabsTrigger value="map" className={`${isDarkTheme ? 'data-[state=active]:bg-white/20' : 'data-[state=active]:bg-white'} ${textColor}`}>
                 Карта
               </TabsTrigger>
             </TabsList>
@@ -478,13 +507,13 @@ const Index = () => {
                 {forecast.map((day, index) => (
                   <div
                     key={index}
-                    className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm hover:bg-white/20 transition-all hover:scale-105 cursor-pointer text-center"
+                    className={`p-4 ${cardBg} rounded-2xl backdrop-blur-sm hover:bg-white/30 transition-all hover:scale-105 cursor-pointer text-center`}
                   >
-                    <p className="text-white font-semibold mb-3">{day.day}</p>
-                    <Icon name={day.icon as any} className="text-white mx-auto mb-3 animate-pulse-glow" size={40} />
-                    <p className="text-3xl font-bold text-white mb-1">{day.temp}°</p>
+                    <p className={`${textColor} font-semibold mb-3`}>{day.day}</p>
+                    <Icon name={day.icon as any} className={`${textColor} mx-auto mb-3 animate-pulse-glow`} size={40} />
+                    <p className={`text-3xl font-bold ${textColor} mb-1`}>{day.temp}°</p>
                     {day.tempMin !== undefined && (
-                      <p className="text-white/60 text-sm">↓ {day.tempMin}°</p>
+                      <p className={`${textSecondary} text-sm`}>↓ {day.tempMin}°</p>
                     )}
                   </div>
                 ))}
@@ -493,7 +522,7 @@ const Index = () => {
 
             <TabsContent value="hourly">
               <div className="space-y-4">
-                <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <h4 className={`${textColor} font-semibold mb-4 flex items-center gap-2`}>
                   <Icon name="Clock" size={20} />
                   Почасовой прогноз и осадки
                 </h4>
@@ -501,14 +530,14 @@ const Index = () => {
                   {hourlyData.map((hour, index) => (
                     <div
                       key={index}
-                      className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm hover:bg-white/20 transition-all"
+                      className={`p-4 ${cardBg} rounded-2xl backdrop-blur-sm hover:bg-white/30 transition-all`}
                     >
-                      <p className="text-white/60 text-sm mb-2">{hour.time}</p>
-                      <p className="text-2xl font-bold text-white mb-3">{hour.temp}°</p>
+                      <p className={`${textSecondary} text-sm mb-2`}>{hour.time}</p>
+                      <p className={`text-2xl font-bold ${textColor} mb-3`}>{hour.temp}°</p>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Icon name="CloudRain" className="text-white/60" size={16} />
-                          <p className="text-white/80 text-sm">{hour.rain}%</p>
+                          <Icon name="CloudRain" className={textSecondary} size={16} />
+                          <p className={`${textColor} text-sm`}>{hour.rain}%</p>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-2">
                           <div
@@ -524,24 +553,24 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="map">
-              <div className="bg-white/10 rounded-2xl p-8 text-center backdrop-blur-sm">
-                <Icon name="Map" className="text-white mx-auto mb-4 animate-pulse-glow" size={80} />
-                <h4 className="text-2xl font-semibold text-white mb-2">Интерактивная карта погоды</h4>
-                <p className="text-white/60 mb-6">
+              <div className={`${cardBg} rounded-2xl p-8 text-center backdrop-blur-sm`}>
+                <Icon name="Map" className={`${textColor} mx-auto mb-4 animate-pulse-glow`} size={80} />
+                <h4 className={`text-2xl font-semibold ${textColor} mb-2`}>Интерактивная карта погоды</h4>
+                <p className={`${textSecondary} mb-6`}>
                   Радар осадков и температурная карта региона
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <div className="p-4 bg-white/10 rounded-xl">
-                    <Icon name="Navigation" className="text-white mx-auto mb-2" size={32} />
-                    <p className="text-white font-medium">Навигация</p>
+                  <div className={`p-4 ${cardBg} rounded-xl`}>
+                    <Icon name="Navigation" className={`${textColor} mx-auto mb-2`} size={32} />
+                    <p className={`${textColor} font-medium`}>Навигация</p>
                   </div>
-                  <div className="p-4 bg-white/10 rounded-xl">
-                    <Icon name="Layers" className="text-white mx-auto mb-2" size={32} />
-                    <p className="text-white font-medium">Слои карты</p>
+                  <div className={`p-4 ${cardBg} rounded-xl`}>
+                    <Icon name="Layers" className={`${textColor} mx-auto mb-2`} size={32} />
+                    <p className={`${textColor} font-medium`}>Слои карты</p>
                   </div>
-                  <div className="p-4 bg-white/10 rounded-xl">
-                    <Icon name="Zap" className="text-white mx-auto mb-2" size={32} />
-                    <p className="text-white font-medium">Грозы</p>
+                  <div className={`p-4 ${cardBg} rounded-xl`}>
+                    <Icon name="Zap" className={`${textColor} mx-auto mb-2`} size={32} />
+                    <p className={`${textColor} font-medium`}>Грозы</p>
                   </div>
                 </div>
               </div>
