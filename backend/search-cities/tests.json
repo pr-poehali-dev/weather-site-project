@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Search for Moscow",
+      "method": "GET",
+      "path": "/?q=Moscow",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "cities": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

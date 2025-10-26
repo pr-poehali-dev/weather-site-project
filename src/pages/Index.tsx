@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
@@ -29,6 +29,15 @@ interface HourlyData {
 
 const WEATHER_API = 'https://functions.poehali.dev/2e1fb99e-adfb-4041-b171-a245be920e5c';
 const GEOCODE_API = 'https://functions.poehali.dev/ab12ed1f-a6b0-4146-8827-fbee7e272262';
+const SEARCH_API = 'https://functions.poehali.dev/0afa56b1-0f02-4dc9-9692-702a4f2e8338';
+
+interface City {
+  name: string;
+  displayName: string;
+  lat: number;
+  lon: number;
+  country: string;
+}
 
 const getWeatherIcon = (code: number): string => {
   if (code === 0) return 'Sun';
@@ -55,6 +64,11 @@ const Index = () => {
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
   const [hourlyData, setHourlyData] = useState<HourlyData[]>([]);
   const [coords, setCoords] = useState({ lat: 55.7558, lon: 37.6173 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<City[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
@@ -124,6 +138,93 @@ const Index = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        setSearchResults(data.cities || []);
+        setShowDropdown(data.cities?.length > 0);
+      } catch (error) {
+        console.error('Search error:', error);
+      }
+    }, 300);
+  };
+
+  const selectCity = async (city: City) => {
+    setSearchQuery(city.displayName);
+    setShowDropdown(false);
+    setLoading(true);
+    setCoords({ lat: city.lat, lon: city.lon });
+
+    try {
+      const weatherRes = await fetch(`${WEATHER_API}?lat=${city.lat}&lon=${city.lon}`);
+      const weatherData = await weatherRes.json();
+
+      setWeather({
+        temp: weatherData.current.temp,
+        feelsLike: weatherData.current.feelsLike,
+        humidity: weatherData.current.humidity,
+        windSpeed: weatherData.current.windSpeed,
+        condition: weatherData.current.condition,
+        location: city.name,
+      });
+
+      const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      const forecastDays = weatherData.daily.time.map((dateStr: string, i: number) => {
+        const date = new Date(dateStr);
+        const dayName = i === 0 ? 'Сегодня' : days[date.getDay()];
+        const code = weatherData.daily.weatherCode[i];
+        return {
+          day: dayName,
+          temp: weatherData.daily.tempMax[i],
+          tempMin: weatherData.daily.tempMin[i],
+          condition: weatherData.current.condition,
+          icon: getWeatherIcon(code),
+        };
+      });
+      setForecast(forecastDays);
+
+      const hourly = weatherData.hourly.time.slice(0, 8).map((timeStr: string, i: number) => {
+        const hour = new Date(timeStr).getHours();
+        return {
+          time: `${hour.toString().padStart(2, '0')}:00`,
+          temp: weatherData.hourly.temperature[i],
+          rain: weatherData.hourly.precipitation[i] || 0,
+        };
+      });
+      setHourlyData(hourly);
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+      setLoading(false);
+    }
+  };
+
   const news = [
     {
       title: 'Сильные дожди ожидаются в выходные',
@@ -146,10 +247,42 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="text-center py-8 animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-2 tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
             Прогноз Погоды
           </h1>
-          <p className="text-white/80 text-lg">Точные данные в режиме реального времени</p>
+          <p className="text-white/80 text-lg mb-6">Точные данные в режиме реального времени</p>
+          
+          <div className="max-w-2xl mx-auto relative" ref={dropdownRef}>
+            <div className="relative">
+              <Icon name="Search" className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+              <input
+                type="text"
+                placeholder="Поиск города..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                className="w-full pl-12 pr-4 py-4 bg-white/20 backdrop-blur-xl border-2 border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:border-white/50 transition-all text-lg"
+              />
+            </div>
+            
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden z-50 animate-scale-in">
+                {searchResults.map((city, index) => (
+                  <button
+                    key={index}
+                    onClick={() => selectCity(city)}
+                    className="w-full px-6 py-4 text-left hover:bg-primary/10 transition-colors border-b border-gray-200 last:border-0 flex items-center gap-3"
+                  >
+                    <Icon name="MapPin" className="text-primary" size={20} />
+                    <div>
+                      <p className="font-medium text-gray-900">{city.name}</p>
+                      <p className="text-sm text-gray-600">{city.country}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
