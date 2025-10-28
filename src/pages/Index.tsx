@@ -440,10 +440,32 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className={`lg:col-span-2 ${cardBg} backdrop-blur-xl ${borderColor} p-8 animate-scale-in`}>
             <div className="flex items-start justify-between mb-8">
-              <div>
+              <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Icon name="MapPin" className={textColor} size={24} />
                   <h2 className={`text-2xl font-semibold ${textColor}`}>{weather.location}</h2>
+                  <button
+                    onClick={() => toggleFavorite({
+                      name: weather.location,
+                      displayName: weather.location,
+                      lat: coords.lat,
+                      lon: coords.lon,
+                      country: ''
+                    })}
+                    className={`p-2 hover:bg-white/20 rounded-lg transition-all`}
+                  >
+                    <Icon
+                      name="Star"
+                      className={isCityFavorite({
+                        name: weather.location,
+                        displayName: weather.location,
+                        lat: coords.lat,
+                        lon: coords.lon,
+                        country: ''
+                      }) ? "text-yellow-300 fill-yellow-300" : textSecondary}
+                      size={20}
+                    />
+                  </button>
                 </div>
                 <p className={textSecondary}>
                   {loading ? 'Определяем местоположение...' : 'Сегодня'}
@@ -483,26 +505,52 @@ const Index = () => {
             </div>
           </Card>
 
-          <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-scale-in`}>
-            <h3 className={`text-xl font-semibold ${textColor} mb-4 flex items-center gap-2`}>
-              <Icon name="Newspaper" size={24} />
-              Новости погоды
-            </h3>
-            <div className="space-y-4">
-              {news.map((item, index) => (
-                <div
-                  key={index}
-                  className={`p-4 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer`}
-                >
-                  <Badge className="bg-accent/80 text-white border-none mb-2 text-xs">
-                    {item.category}
-                  </Badge>
-                  <p className={`${textColor} font-medium mb-1`}>{item.title}</p>
-                  <p className={`${textSecondary} text-sm`}>{item.time}</p>
+          <div className="space-y-6">
+            {favorites.length > 0 && (
+              <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-scale-in`}>
+                <h3 className={`text-xl font-semibold ${textColor} mb-4 flex items-center gap-2`}>
+                  <Icon name="Star" className="text-yellow-300 fill-yellow-300" size={24} />
+                  Избранные города
+                </h3>
+                <div className="space-y-2">
+                  {favorites.slice(0, 4).map((city, index) => (
+                    <button
+                      key={index}
+                      onClick={() => selectCity(city)}
+                      className={`w-full p-3 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all text-left flex items-center justify-between group`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon name="MapPin" className={textColor} size={18} />
+                        <span className={`${textColor} font-medium`}>{city.name}</span>
+                      </div>
+                      <Icon name="ChevronRight" className={`${textSecondary} group-hover:${textColor} transition-colors`} size={18} />
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Card>
+              </Card>
+            )}
+
+            <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-scale-in`}>
+              <h3 className={`text-xl font-semibold ${textColor} mb-4 flex items-center gap-2`}>
+                <Icon name="Newspaper" size={24} />
+                Новости погоды
+              </h3>
+              <div className="space-y-4">
+                {news.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer`}
+                  >
+                    <Badge className="bg-accent/80 text-white border-none mb-2 text-xs">
+                      {item.category}
+                    </Badge>
+                    <p className={`${textColor} font-medium mb-1`}>{item.title}</p>
+                    <p className={`${textSecondary} text-sm`}>{item.time}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
 
         <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-fade-in`}>
