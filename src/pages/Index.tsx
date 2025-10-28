@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
+import WeatherAnimation from '@/components/WeatherAnimation';
 
 interface WeatherData {
   temp: number;
@@ -298,8 +299,9 @@ const Index = () => {
   const inputBg = isDarkTheme ? 'bg-white/20 border-white/30' : 'bg-white/60 border-gray-300';
 
   return (
-    <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500`}>
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500 relative overflow-hidden`}>
+      <WeatherAnimation weatherCode={currentWeatherCode} />
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         <header className="text-center py-8 animate-fade-in relative">
           <div className="absolute top-4 right-4 flex items-center gap-3">
             <div className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full px-4 py-2 flex items-center gap-3 animate-fade-in`}>
