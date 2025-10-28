@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import WeatherAnimation from '@/components/WeatherAnimation';
+import WeatherAlert from '@/components/WeatherAlert';
 
 interface WeatherData {
   temp: number;
@@ -301,6 +302,12 @@ const Index = () => {
   return (
     <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500 relative overflow-hidden`}>
       <WeatherAnimation weatherCode={currentWeatherCode} />
+      <WeatherAlert 
+        weatherCode={currentWeatherCode} 
+        temp={weather.temp} 
+        windSpeed={weather.windSpeed}
+        isDarkTheme={isDarkTheme}
+      />
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         <header className="text-center py-8 animate-fade-in relative">
           <div className="absolute top-4 right-4 flex items-center gap-3">
