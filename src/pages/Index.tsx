@@ -59,6 +59,7 @@ const Index = () => {
     condition: 'Переменная облачность',
     location: 'Москва',
   });
+  const [currentWeatherCode, setCurrentWeatherCode] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
@@ -93,6 +94,7 @@ const Index = () => {
           condition: weatherData.current.condition,
           location: geoData.city || 'Москва',
         });
+        setCurrentWeatherCode(weatherData.current.weatherCode || 0);
 
         const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
         const forecastDays = weatherData.daily.time.map((dateStr: string, i: number) => {
@@ -299,12 +301,18 @@ const Index = () => {
     <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500`}>
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="text-center py-8 animate-fade-in relative">
-          <button
-            onClick={toggleTheme}
-            className={`absolute top-4 right-4 p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
-          >
-            <Icon name={isDarkTheme ? "Sun" : "Moon"} className={textColor} size={24} />
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-3">
+            <div className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full px-4 py-2 flex items-center gap-3 animate-fade-in`}>
+              <Icon name={getWeatherIcon(currentWeatherCode)} className={textColor} size={28} />
+              <span className={`text-2xl font-bold ${textColor}`}>{Math.round(weather.temp)}°</span>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={`p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
+            >
+              <Icon name={isDarkTheme ? "Sun" : "Moon"} className={textColor} size={24} />
+            </button>
+          </div>
 
           <h1 className={`text-5xl md:text-7xl font-bold ${textColor} mb-4 tracking-tight`}>
             Прогноз Погоды
