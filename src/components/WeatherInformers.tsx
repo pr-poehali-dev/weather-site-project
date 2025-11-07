@@ -227,6 +227,142 @@ const WeatherInformers = ({
       label: 'Скорость звука',
       value: `${Math.round(331.5 + (0.6 * dewPoint))} м/с`,
       description: 'В текущих условиях'
+    },
+    {
+      icon: 'CloudFog',
+      label: 'Туман',
+      value: visibility < 1 ? 'Плотный' : visibility < 5 ? 'Слабый' : 'Нет',
+      description: `Видимость ${visibility} км`,
+      valueColor: visibility < 1 ? 'text-red-400' : visibility < 5 ? 'text-yellow-400' : 'text-green-400'
+    },
+    {
+      icon: 'Rainbow',
+      label: 'Вероятность радуги',
+      value: `${humidity > 70 && uvIndex > 3 ? Math.floor(Math.random() * 50 + 50) : Math.floor(Math.random() * 20)}%`,
+      description: humidity > 70 && uvIndex > 3 ? 'Высокая' : 'Низкая'
+    },
+    {
+      icon: 'Umbrella',
+      label: 'Нужен зонт',
+      value: humidity > 80 ? 'Да' : 'Нет',
+      description: humidity > 80 ? 'Возможен дождь' : 'Погода сухая',
+      valueColor: humidity > 80 ? 'text-red-400' : 'text-green-400'
+    },
+    {
+      icon: 'Shirt',
+      label: 'Одежда',
+      value: dewPoint > 20 ? 'Легкая' : dewPoint > 10 ? 'Средняя' : 'Теплая',
+      description: dewPoint > 20 ? 'Футболка' : dewPoint > 10 ? 'Кофта' : 'Куртка'
+    },
+    {
+      icon: 'Footprints',
+      label: 'Бег',
+      value: dewPoint > 15 && dewPoint < 25 && humidity < 70 ? 'Отлично' : 'Плохо',
+      description: 'Условия для пробежки',
+      valueColor: dewPoint > 15 && dewPoint < 25 && humidity < 70 ? 'text-green-400' : 'text-orange-400'
+    },
+    {
+      icon: 'Trees',
+      label: 'Пыльца',
+      value: `${uvIndex > 5 && humidity < 50 ? 'Высокий' : 'Низкий'} уровень`,
+      description: uvIndex > 5 && humidity < 50 ? 'Аллергия возможна' : 'Безопасно',
+      valueColor: uvIndex > 5 && humidity < 50 ? 'text-red-400' : 'text-green-400'
+    },
+    {
+      icon: 'Glasses',
+      label: 'Солнцезащита',
+      value: uvIndex > 5 ? 'Нужна' : 'Не требуется',
+      description: uvIndex > 5 ? 'Очки обязательны' : 'Солнце слабое',
+      valueColor: uvIndex > 5 ? 'text-orange-400' : 'text-green-400'
+    },
+    {
+      icon: 'Home',
+      label: 'Проветривание',
+      value: humidity < 60 && windSpeed < 15 ? 'Да' : 'Нет',
+      description: humidity < 60 && windSpeed < 15 ? 'Хорошее время' : 'Не рекомендуется',
+      valueColor: humidity < 60 && windSpeed < 15 ? 'text-green-400' : 'text-red-400'
+    },
+    {
+      icon: 'Coffee',
+      label: 'Погода для кофе',
+      value: dewPoint < 15 || humidity > 70 ? 'Идеально' : 'Обычно',
+      description: dewPoint < 15 || humidity > 70 ? 'Уютная погода' : 'Стандартная',
+      valueColor: dewPoint < 15 || humidity > 70 ? 'text-orange-400' : 'text-blue-400'
+    },
+    {
+      icon: 'Car',
+      label: 'Дорожные условия',
+      value: visibility > 5 && windSpeed < 20 ? 'Хорошие' : 'Осторожно',
+      description: visibility > 5 && windSpeed < 20 ? 'Безопасно' : 'Будьте внимательны',
+      valueColor: visibility > 5 && windSpeed < 20 ? 'text-green-400' : 'text-yellow-400'
+    },
+    {
+      icon: 'Bike',
+      label: 'Велопрогулка',
+      value: windSpeed < 15 && humidity < 75 ? 'Отлично' : 'Не лучшее время',
+      description: windSpeed < 15 && humidity < 75 ? 'Идеальные условия' : 'Сложные условия'
+    },
+    {
+      icon: 'Dog',
+      label: 'Прогулка с питомцем',
+      value: dewPoint > 5 && dewPoint < 25 ? 'Да' : 'Осторожно',
+      description: dewPoint > 5 && dewPoint < 25 ? 'Комфортно' : 'Слишком холодно/жарко',
+      valueColor: dewPoint > 5 && dewPoint < 25 ? 'text-green-400' : 'text-orange-400'
+    },
+    {
+      icon: 'Camera',
+      label: 'Фотография',
+      value: uvIndex > 3 && visibility > 8 ? 'Отлично' : 'Средне',
+      description: uvIndex > 3 && visibility > 8 ? 'Хорошее освещение' : 'Слабый свет',
+      valueColor: uvIndex > 3 && visibility > 8 ? 'text-green-400' : 'text-yellow-400'
+    },
+    {
+      icon: 'Plane',
+      label: 'Условия полета',
+      value: visibility > 10 && windSpeed < 25 ? 'Хорошие' : 'Сложные',
+      description: visibility > 10 && windSpeed < 25 ? 'Безопасно' : 'Турбулентность',
+      valueColor: visibility > 10 && windSpeed < 25 ? 'text-green-400' : 'text-red-400'
+    },
+    {
+      icon: 'Waves',
+      label: 'Морские условия',
+      value: windSpeed > 20 ? 'Волнение' : 'Спокойно',
+      description: windSpeed > 20 ? 'Высокие волны' : 'Море спокойно',
+      valueColor: windSpeed > 20 ? 'text-red-400' : 'text-blue-400'
+    },
+    {
+      icon: 'Mountain',
+      label: 'Альпинизм',
+      value: windSpeed < 15 && visibility > 8 ? 'Можно' : 'Опасно',
+      description: windSpeed < 15 && visibility > 8 ? 'Безопасные условия' : 'Не рекомендуется',
+      valueColor: windSpeed < 15 && visibility > 8 ? 'text-green-400' : 'text-red-400'
+    },
+    {
+      icon: 'Flame',
+      label: 'Пожароопасность',
+      value: humidity < 30 && dewPoint > 20 ? 'Высокая' : 'Низкая',
+      description: humidity < 30 && dewPoint > 20 ? 'Будьте осторожны' : 'Безопасно',
+      valueColor: humidity < 30 && dewPoint > 20 ? 'text-red-400' : 'text-green-400'
+    },
+    {
+      icon: 'Snowflake',
+      label: 'Снежные условия',
+      value: dewPoint < 0 ? 'Снег возможен' : 'Снега нет',
+      description: dewPoint < 0 ? `${Math.round(dewPoint)}°C` : 'Слишком тепло',
+      valueColor: dewPoint < 0 ? 'text-blue-400' : 'text-orange-400'
+    },
+    {
+      icon: 'Leaf',
+      label: 'Листопад',
+      value: windSpeed > 10 && dewPoint < 15 ? 'Активный' : 'Слабый',
+      description: windSpeed > 10 && dewPoint < 15 ? 'Много листьев' : 'Мало активности'
+    },
+    {
+      icon: 'Sparkles',
+      label: 'Звездное небо',
+      value: humidity < 40 && visibility > 10 ? 'Отлично' : 'Плохо',
+      description: humidity < 40 && visibility > 10 ? 'Ясное небо' : 'Облачно',
+      valueColor: humidity < 40 && visibility > 10 ? 'text-purple-400' : 'text-gray-400'
     }
   ];
 
