@@ -10,6 +10,7 @@ import WeatherNotifications from '@/components/WeatherNotifications';
 import WeatherInformers from '@/components/WeatherInformers';
 import WeatherDetailsWidgets from '@/components/WeatherDetailsWidgets';
 import WeatherCharts from '@/components/WeatherCharts';
+import WeeklyForecast from '@/components/WeeklyForecast';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
@@ -611,21 +612,24 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="week">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                {forecast.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 ${cardBg} rounded-2xl backdrop-blur-sm hover:bg-white/30 transition-all hover:scale-105 cursor-pointer text-center`}
-                  >
-                    <p className={`${textColor} font-semibold mb-3`}>{day.day}</p>
-                    <Icon name={day.icon as any} className={`${textColor} mx-auto mb-3 animate-pulse-glow`} size={40} />
-                    <p className={`text-3xl font-bold ${textColor} mb-1`}>{day.temp}°</p>
-                    {day.tempMin !== undefined && (
-                      <p className={`${textSecondary} text-sm`}>↓ {day.tempMin}°</p>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <WeeklyForecast
+                forecast={forecast.map(day => ({
+                  day: day.day,
+                  date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }),
+                  temp: day.temp,
+                  tempMin: day.tempMin,
+                  tempMax: day.temp + 4,
+                  condition: day.condition,
+                  icon: day.icon,
+                  humidity: 60,
+                  windSpeed: 12,
+                  precipitation: 20,
+                  uvIndex: 5,
+                  sunrise: '06:24',
+                  sunset: '18:45'
+                }))}
+                isDarkTheme={isDarkTheme}
+              />
             </TabsContent>
 
             <TabsContent value="hourly">
