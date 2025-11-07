@@ -435,8 +435,6 @@ const Index = () => {
         isDarkTheme={isDarkTheme}
       />
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
-        <FinancialTicker isDarkTheme={isDarkTheme} />
-        
         <header className="text-center py-8 animate-fade-in relative">
           <div className="absolute top-4 left-4">
             <button
