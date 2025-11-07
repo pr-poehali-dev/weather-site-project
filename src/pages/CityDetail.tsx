@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WEATHER_API = 'https://functions.poehali.dev/2e1fb99e-adfb-4041-b171-a245be920e5c';
 
+const weatherCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000;
+
 interface WeatherData {
   temp: number;
   feelsLike: number;
@@ -47,18 +50,42 @@ const CityDetail = () => {
 
   const fetchWeather = async (lat: number, lon: number) => {
     try {
-      console.log('🌤️ Загружаем погоду для координат:', lat, lon);
+      const cacheKey = `${lat},${lon}`;
+      const cached = weatherCache.get(cacheKey);
+      
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        const data = cached.data;
+        setWeather({
+          temp: data.main.temp,
+          feelsLike: data.main.feels_like,
+          humidity: data.main.humidity,
+          windSpeed: data.wind.speed,
+          condition: data.weather[0].description,
+          weatherCode: data.weather[0].id,
+          pressure: Math.round(data.main.pressure * 0.75),
+          visibility: Math.round(data.visibility / 1000),
+          clouds: data.clouds.all,
+          windDeg: data.wind.deg,
+          sunrise: data.sys.sunrise,
+          sunset: data.sys.sunset,
+          uvIndex: Math.round(Math.random() * 11),
+          dewPoint: data.main.temp - ((100 - data.main.humidity) / 5)
+        });
+        setLoading(false);
+        return;
+      }
+      
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric&lang=ru`
       );
-      console.log('📡 Ответ API:', response.status, response.ok);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('✅ Данные погоды получены:', data);
+      
+      weatherCache.set(cacheKey, { data, timestamp: Date.now() });
       
       setWeather({
         temp: data.main.temp,
@@ -78,7 +105,7 @@ const CityDetail = () => {
       });
       setLoading(false);
     } catch (error) {
-      console.error('❌ Ошибка загрузки погоды:', error);
+      console.error('Weather fetch error:', error);
       setLoading(false);
     }
   };

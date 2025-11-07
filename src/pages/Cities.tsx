@@ -19,6 +19,9 @@ interface WeatherData {
   icon: string;
 }
 
+const weatherCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000;
+
 const Cities = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,14 +75,34 @@ const Cities = () => {
     let isCancelled = false;
     
     const fetchWeatherForCities = async () => {
-      console.log('🌤️ Начинаем загрузку погоды для', filteredCities.length, 'городов');
       setLoadingWeather(true);
       const weatherMap: Record<string, WeatherData> = {};
-      const citiesToFetch = filteredCities.slice(0, 20);
-      console.log('🎯 Будем загружать погоду для', citiesToFetch.length, 'городов');
+      const citiesToFetch = filteredCities.slice(0, 10);
 
       const fetchPromises = citiesToFetch.map(async (city) => {
         try {
+          const cacheKey = `${city.lat},${city.lon}`;
+          const cached = weatherCache.get(cacheKey);
+          
+          if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+            const data = cached.data;
+            return {
+              cityId: city.id,
+              weather: {
+                temp: Math.round(data.main.temp),
+                feels_like: Math.round(data.main.feels_like),
+                humidity: data.main.humidity,
+                pressure: Math.round(data.main.pressure * 0.75),
+                wind_speed: Math.round(data.wind.speed),
+                wind_deg: data.wind.deg,
+                clouds: data.clouds.all,
+                visibility: Math.round(data.visibility / 1000),
+                description: data.weather[0].description,
+                icon: data.weather[0].icon
+              }
+            };
+          }
+          
           const response = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric&lang=ru`
           );
@@ -89,6 +112,7 @@ const Cities = () => {
           }
           
           const data = await response.json();
+          weatherCache.set(cacheKey, { data, timestamp: Date.now() });
           
           return {
             cityId: city.id,
@@ -112,7 +136,6 @@ const Cities = () => {
       });
 
       const results = await Promise.all(fetchPromises);
-      console.log('📊 Получено результатов:', results.filter(r => r !== null).length, 'из', results.length);
       
       if (!isCancelled) {
         results.forEach(result => {
@@ -121,7 +144,6 @@ const Cities = () => {
           }
         });
 
-        console.log('✅ Погода загружена для городов:', Object.keys(weatherMap));
         setWeatherData(weatherMap);
         setLoadingWeather(false);
       }
