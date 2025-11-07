@@ -7,6 +7,7 @@ import WeatherAnimation from '@/components/WeatherAnimation';
 import WeatherAlert from '@/components/WeatherAlert';
 import CityComparison from '@/components/CityComparison';
 import WeatherNotifications from '@/components/WeatherNotifications';
+import WeatherInformers from '@/components/WeatherInformers';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
@@ -567,6 +568,16 @@ const Index = () => {
             </Card>
           </div>
         </div>
+
+        <WeatherInformers
+          humidity={weather.humidity}
+          windSpeed={weather.windSpeed}
+          pressure={1013}
+          visibility={10}
+          uvIndex={5}
+          dewPoint={weather.feelsLike - 2}
+          isDarkTheme={isDarkTheme}
+        />
 
         <Card className={`${cardBg} backdrop-blur-xl ${borderColor} p-6 animate-fade-in`}>
           <Tabs defaultValue="week" className="w-full">
