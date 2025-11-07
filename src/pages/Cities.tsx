@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import { russianCities, searchCities } from '@/data/russianCities';
 import { Input } from '@/components/ui/input';
+import SEO from '@/components/SEO';
 
 interface WeatherData {
   temp: number;
@@ -157,8 +158,15 @@ const Cities = () => {
   }, [filteredCities]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      <SEO 
+        title="Погода в городах России — прогноз погоды в 40 крупнейших городах"
+        description="Актуальная погода в 40 крупнейших городах России: Москва, Санкт-Петербург, Новосибирск, Екатеринбург, Казань, Челябинск и другие. Подробный прогноз температуры, давления, влажности, ветра."
+        keywords="погода в городах России, прогноз погоды по городам, погода Москва, погода Санкт-Петербург, погода Новосибирск"
+        canonical="https://weather-site-project.poehali.dev/cities"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => navigate('/')}
@@ -325,7 +333,8 @@ const Cities = () => {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

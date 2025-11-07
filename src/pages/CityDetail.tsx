@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { getCityById, type CityData } from '@/data/russianCities';
 import WeatherAnimation from '@/components/WeatherAnimation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SEO from '@/components/SEO';
+import StructuredData from '@/components/StructuredData';
 
 const WEATHER_API = 'https://functions.poehali.dev/2e1fb99e-adfb-4041-b171-a245be920e5c';
 
@@ -159,11 +161,56 @@ const CityDetail = () => {
     return { level: 'Экстремальный', color: 'text-purple-400' };
   };
 
+  const cityTitle = city ? `Погода в ${city.name === 'Москва' ? 'Москве' : city.name === 'Санкт-Петербург' ? 'Санкт-Петербурге' : `городе ${city.name}`}` : 'Погода';
+  const weatherDesc = weather ? `, ${Math.round(weather.temp)}°C, ${weather.condition}` : '';
+
+  const structuredData = city && weather ? {
+    "@context": "https://schema.org",
+    "@type": "WeatherForecast",
+    "name": `Погода в ${city.name}`,
+    "description": `Актуальная погода в городе ${city.name}, ${city.region}`,
+    "location": {
+      "@type": "Place",
+      "name": city.name,
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": city.region,
+        "addressCountry": "RU"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": city.lat,
+        "longitude": city.lon
+      }
+    },
+    "temperature": {
+      "@type": "QuantitativeValue",
+      "value": Math.round(weather.temp),
+      "unitCode": "CEL"
+    },
+    "potentialAction": {
+      "@type": "ViewAction",
+      "target": `https://weather-site-project.poehali.dev/cities/${cityId}`
+    }
+  } : null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8 relative overflow-hidden">
-      <WeatherAnimation weatherCode={weather?.weatherCode || 0} />
-      
-      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+    <>
+      {city && (
+        <>
+          <SEO 
+            title={`${cityTitle} — точный прогноз погоды на сегодня и неделю${weatherDesc}`}
+            description={`Актуальная погода в городе ${city.name}, ${city.region}. ${city.description.slice(0, 100)}... Подробный прогноз температуры, влажности, давления, ветра.`}
+            keywords={`погода ${city.name}, прогноз погоды ${city.name}, температура ${city.name}, погода ${city.region}`}
+            canonical={`https://weather-site-project.poehali.dev/cities/${cityId}`}
+          />
+          {structuredData && <StructuredData data={structuredData} />}
+        </>
+      )}
+      <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8 relative overflow-hidden">
+        <WeatherAnimation weatherCode={weather?.weatherCode || 0} />
+        
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => navigate('/cities')}
@@ -571,7 +618,8 @@ const CityDetail = () => {
           </div>
         </Card>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

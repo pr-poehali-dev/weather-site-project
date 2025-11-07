@@ -21,6 +21,7 @@ import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
 import { notificationService } from '@/utils/notificationService';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 interface WeatherData {
   temp: number;
@@ -379,8 +380,15 @@ const Index = () => {
   };
 
   return (
-    <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500 relative overflow-hidden`}>
-      <WeatherAnimation weatherCode={currentWeatherCode} />
+    <>
+      <SEO 
+        title="Погода в России — точный прогноз погоды на сегодня и неделю"
+        description="Актуальная погода в крупнейших городах России: Москва, Санкт-Петербург, Новосибирск, Екатеринбург. Точный прогноз на сегодня, неделю. Температура, влажность, ветер, давление."
+        keywords="погода, прогноз погоды, погода в России, температура, влажность, давление, ветер"
+        canonical="https://weather-site-project.poehali.dev/"
+      />
+      <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500 relative overflow-hidden`}>
+        <WeatherAnimation weatherCode={currentWeatherCode} />
       
       {notificationPermission === 'default' && (
         <div className={`fixed top-4 right-4 z-50 ${cardBg} backdrop-blur-xl border ${borderColor} rounded-2xl p-4 shadow-2xl max-w-md animate-slide-in`}>
@@ -834,7 +842,8 @@ const Index = () => {
           isDarkTheme={isDarkTheme}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
