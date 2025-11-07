@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Area, AreaChart } from 'recharts';
+import html2canvas from 'html2canvas';
 
 interface InformerDetailModalProps {
   informer: {
@@ -19,6 +20,8 @@ interface InformerDetailModalProps {
 
 const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailModalProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState<'24h' | '7d' | '30d'>('24h');
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const generateHistoryData = (period: '24h' | '7d' | '30d') => {
     const points = period === '24h' ? 24 : period === '7d' ? 7 : 30;
@@ -115,9 +118,50 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
 
   const recommendations = getRecommendations();
 
+  const exportToCSV = () => {
+    const csvContent = [
+      ['Время', 'Значение'],
+      ...historyData.map(item => [item.time, item.value])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${informer.label}_${selectedPeriod}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const saveScreenshot = async () => {
+    if (!modalRef.current) return;
+    
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(modalRef.current, {
+        backgroundColor: isDarkTheme ? '#111827' : '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${informer.label}_${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Ошибка при создании скриншота:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-      <Card className={`w-full max-w-4xl ${cardBg} ${textColor} max-h-[90vh] overflow-y-auto`}>
+      <Card ref={modalRef} className={`w-full max-w-4xl ${cardBg} ${textColor} max-h-[90vh] overflow-y-auto`}>
         <div className="p-6 space-y-6">
           {/* Header */}
           <div className="flex justify-between items-start">
@@ -130,9 +174,28 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
                 <p className={subtextColor}>{informer.description}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <Icon name="X" size={24} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={exportToCSV}
+                title="Экспорт в CSV"
+              >
+                <Icon name="Download" size={20} />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={saveScreenshot}
+                disabled={isExporting}
+                title="Сохранить скриншот"
+              >
+                <Icon name={isExporting ? "Loader2" : "Camera"} size={20} className={isExporting ? "animate-spin" : ""} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <Icon name="X" size={24} />
+              </Button>
+            </div>
           </div>
 
           {/* Current Value */}
@@ -196,7 +259,20 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
 
           {/* Chart */}
           <div className={`p-6 ${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'} rounded-2xl`}>
-            <h3 className={`text-lg font-semibold ${textColor} mb-4`}>История изменений</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className={`text-lg font-semibold ${textColor}`}>История изменений</h3>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2"
+                >
+                  <Icon name="FileDown" size={16} />
+                  CSV
+                </Button>
+              </div>
+            </div>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={historyData}>
                 <defs>
