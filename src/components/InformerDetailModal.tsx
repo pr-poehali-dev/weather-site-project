@@ -6,6 +6,7 @@ import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip as Recharts
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import EmailScheduleSettings from './EmailScheduleSettings';
 
 interface InformerDetailModalProps {
   informer: {
@@ -25,6 +26,7 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
   const modalRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showEmailSettings, setShowEmailSettings] = useState(false);
 
   const generateHistoryData = (period: '24h' | '7d' | '30d') => {
     const points = period === '24h' ? 24 : period === '7d' ? 7 : 30;
@@ -456,6 +458,18 @@ ${informer.tooltip || ''}
                       <Icon name="Copy" size={18} className="text-gray-500" />
                       Копировать
                     </Button>
+                    <div className={`my-2 h-px ${isDarkTheme ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={() => {
+                        setShowShareMenu(false);
+                        setShowEmailSettings(true);
+                      }}
+                    >
+                      <Icon name="CalendarClock" size={18} className="text-purple-500" />
+                      Автоотправка
+                    </Button>
                   </div>
                 )}
               </div>
@@ -602,6 +616,14 @@ ${informer.tooltip || ''}
           </div>
         </div>
       </Card>
+      
+      {showEmailSettings && (
+        <EmailScheduleSettings
+          informerLabel={informer.label}
+          isDarkTheme={isDarkTheme}
+          onClose={() => setShowEmailSettings(false)}
+        />
+      )}
     </div>
   );
 };
