@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip as RechartsTooltip, Area, AreaChart } from 'recharts';
 import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 interface InformerDetailModalProps {
   informer: {
@@ -205,6 +207,152 @@ ${informer.tooltip || ''}
     }
   };
 
+  const generatePDFReport = async () => {
+    setIsExporting(true);
+    
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Заголовок
+      pdf.setFontSize(24);
+      pdf.setTextColor(59, 130, 246);
+      pdf.text(informer.label, 20, 25);
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(informer.description, 20, 35);
+      
+      // Дата и время
+      pdf.setFontSize(10);
+      pdf.setTextColor(150, 150, 150);
+      const reportDate = new Date().toLocaleString('ru-RU');
+      pdf.text(`Отчёт создан: ${reportDate}`, 20, 45);
+      
+      // Линия разделитель
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(20, 50, pageWidth - 20, 50);
+      
+      // Текущее значение
+      pdf.setFontSize(48);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(informer.value, 20, 70);
+      
+      if (informer.tooltip) {
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        const tooltipLines = pdf.splitTextToSize(informer.tooltip, pageWidth - 40);
+        pdf.text(tooltipLines, 20, 80);
+      }
+      
+      // Статистика
+      pdf.setFontSize(14);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Статистика', 20, 100);
+      
+      const statsData = [
+        ['Текущее', stats.current],
+        ['Среднее', stats.avg],
+        ['Минимум', stats.min],
+        ['Максимум', stats.max]
+      ];
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: 105,
+        head: [['Показатель', 'Значение']],
+        body: statsData,
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 20, right: 20 }
+      });
+      
+      // График
+      const chartElement = modalRef.current?.querySelector('.recharts-wrapper');
+      if (chartElement) {
+        const canvas = await html2canvas(chartElement as HTMLElement, {
+          backgroundColor: '#ffffff',
+          scale: 2
+        });
+        const imgData = canvas.toDataURL('image/png');
+        
+        // @ts-ignore
+        const finalY = pdf.lastAutoTable.finalY + 10;
+        pdf.text('График изменений', 20, finalY);
+        pdf.addImage(imgData, 'PNG', 20, finalY + 5, pageWidth - 40, 80);
+      }
+      
+      // Таблица данных
+      pdf.addPage();
+      pdf.setFontSize(14);
+      pdf.text('Детальные данные', 20, 25);
+      
+      const tableData = historyData.map(item => [item.time, item.value.toString()]);
+      
+      // @ts-ignore
+      pdf.autoTable({
+        startY: 30,
+        head: [['Время', 'Значение']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 20, right: 20 }
+      });
+      
+      // Рекомендации
+      const recommendations = getRecommendations();
+      if (recommendations.length > 0) {
+        pdf.addPage();
+        pdf.setFontSize(14);
+        pdf.text('Рекомендации', 20, 25);
+        
+        let yPos = 35;
+        recommendations.forEach((rec, index) => {
+          pdf.setFontSize(12);
+          pdf.setTextColor(0, 0, 0);
+          pdf.text(`${index + 1}. ${rec.title}`, 20, yPos);
+          
+          pdf.setFontSize(10);
+          pdf.setTextColor(100, 100, 100);
+          const descLines = pdf.splitTextToSize(rec.description, pageWidth - 40);
+          pdf.text(descLines, 25, yPos + 5);
+          
+          yPos += 15 + (descLines.length * 5);
+          
+          if (yPos > pageHeight - 20) {
+            pdf.addPage();
+            yPos = 25;
+          }
+        });
+      }
+      
+      // Футер
+      const pageCount = pdf.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(
+          `Страница ${i} из ${pageCount} | ${informer.label}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+      }
+      
+      // Сохранение
+      const fileName = `${informer.label}_отчет_${selectedPeriod}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+    } catch (error) {
+      console.error('Ошибка создания PDF:', error);
+      alert('Не удалось создать PDF-отчёт');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <Card ref={modalRef} className={`w-full max-w-4xl ${cardBg} ${textColor} max-h-[90vh] overflow-y-auto`}>
@@ -221,6 +369,15 @@ ${informer.tooltip || ''}
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={generatePDFReport}
+                disabled={isExporting}
+                title="Создать PDF-отчёт"
+              >
+                <Icon name={isExporting ? "Loader2" : "FileText"} size={20} className={isExporting ? "animate-spin" : ""} />
+              </Button>
               <Button 
                 variant="outline" 
                 size="icon" 
