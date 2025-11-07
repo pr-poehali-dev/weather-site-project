@@ -9,6 +9,7 @@ import CityComparison from '@/components/CityComparison';
 import WeatherNotifications from '@/components/WeatherNotifications';
 import WeatherInformers from '@/components/WeatherInformers';
 import WeatherDetailsWidgets from '@/components/WeatherDetailsWidgets';
+import WeatherCharts from '@/components/WeatherCharts';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
@@ -587,6 +588,11 @@ const Index = () => {
           airQuality={45}
           precipitation={25}
           cloudCover={60}
+          isDarkTheme={isDarkTheme}
+        />
+
+        <WeatherCharts
+          hourlyData={hourlyData}
           isDarkTheme={isDarkTheme}
         />
 
