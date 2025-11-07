@@ -5,6 +5,7 @@ import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import WeatherAnimation from '@/components/WeatherAnimation';
 import WeatherAlert from '@/components/WeatherAlert';
+import CityComparison from '@/components/CityComparison';
 
 interface WeatherData {
   temp: number;
@@ -73,6 +74,7 @@ const Index = () => {
   const [favorites, setFavorites] = useState<City[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const [showComparison, setShowComparison] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
@@ -352,6 +354,14 @@ const Index = () => {
                   </span>
                 )}
               </button>
+              {favorites.length >= 2 && (
+                <button
+                  onClick={() => setShowComparison(true)}
+                  className={`px-6 py-4 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl hover:bg-white/30 transition-all flex items-center gap-2`}
+                >
+                  <Icon name="GitCompare" className={textColor} size={24} />
+                </button>
+              )}
             </div>
             
             {showDropdown && searchResults.length > 0 && (
@@ -643,6 +653,14 @@ const Index = () => {
           </Tabs>
         </Card>
       </div>
+
+      {showComparison && (
+        <CityComparison
+          cities={favorites}
+          onClose={() => setShowComparison(false)}
+          isDarkTheme={isDarkTheme}
+        />
+      )}
     </div>
   );
 };
