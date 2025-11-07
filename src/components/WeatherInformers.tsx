@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import Icon from '@/components/ui/icon';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface WeatherInformersProps {
   humidity: number;
@@ -72,38 +73,44 @@ const WeatherInformers = ({
       icon: 'Droplets',
       label: 'Влажность',
       value: `${humidity}%`,
-      description: humidity > 70 ? 'Высокая' : humidity > 40 ? 'Комфортная' : 'Низкая'
+      description: humidity > 70 ? 'Высокая' : humidity > 40 ? 'Комфортная' : 'Низкая',
+      tooltip: `Относительная влажность воздуха показывает содержание водяного пара. Комфортный диапазон: 40-60%. При ${humidity}% ${humidity > 70 ? 'воздух насыщен влагой, что может вызывать дискомфорт' : humidity > 40 ? 'влажность в норме' : 'воздух сухой, рекомендуется увлажнение'}.`
     },
     {
       icon: 'Wind',
       label: 'Ветер',
       value: `${Math.round(windSpeed)} км/ч`,
-      description: `${getWindDirection()} • ${windSpeed > 20 ? 'Сильный' : windSpeed > 10 ? 'Умеренный' : 'Слабый'}`
+      description: `${getWindDirection()} • ${windSpeed > 20 ? 'Сильный' : windSpeed > 10 ? 'Умеренный' : 'Слабый'}`,
+      tooltip: `Скорость ветра ${Math.round(windSpeed)} км/ч направлением ${getWindDirection()}. ${windSpeed > 25 ? 'Очень сильный ветер, будьте осторожны на улице!' : windSpeed > 15 ? 'Умеренный ветер, возможны затруднения при ходьбе' : 'Слабый ветер, комфортные условия'}.`
     },
     {
       icon: 'Gauge',
       label: 'Давление',
       value: `${pressure} мм`,
-      description: pressure > 760 ? 'Высокое' : pressure > 740 ? 'Нормальное' : 'Низкое'
+      description: pressure > 760 ? 'Высокое' : pressure > 740 ? 'Нормальное' : 'Низкое',
+      tooltip: `Атмосферное давление ${pressure} мм рт.ст. Нормальное давление 760 мм рт.ст. ${pressure > 770 ? 'Высокое давление может вызывать головные боли у метеочувствительных людей' : pressure < 740 ? 'Низкое давление часто сопровождается пасмурной погодой' : 'Давление в норме'}.`
     },
     {
       icon: 'Eye',
       label: 'Видимость',
       value: `${visibility} км`,
-      description: getVisibilityLevel(visibility)
+      description: getVisibilityLevel(visibility),
+      tooltip: `Метеорологическая видимость ${visibility} км. ${visibility >= 10 ? 'Отличная видимость, можно увидеть объекты на большом расстоянии' : visibility >= 5 ? 'Хорошая видимость для всех видов деятельности' : visibility >= 2 ? 'Умеренная видимость, возможен легкий туман' : 'Плохая видимость, возможен густой туман или осадки'}.`
     },
     {
       icon: 'Sun',
       label: 'УФ-индекс',
       value: uvIndex.toString(),
       description: uvData.level,
-      valueColor: uvData.color
+      valueColor: uvData.color,
+      tooltip: `УФ-индекс ${uvIndex} - ${uvData.level.toLowerCase()} уровень. ${uvIndex <= 2 ? 'Защита не требуется' : uvIndex <= 5 ? 'Рекомендуется солнцезащитный крем SPF 15+' : uvIndex <= 7 ? 'Необходима защита: крем SPF 30+, очки, головной убор' : uvIndex <= 10 ? 'Высокий риск повреждения кожи, избегайте солнца 10:00-16:00' : 'Экстремальный уровень! Оставайтесь в тени, обязательна максимальная защита'}.`
     },
     {
       icon: 'Thermometer',
       label: 'Точка росы',
       value: `${Math.round(dewPoint)}°C`,
-      description: dewPoint > 20 ? 'Душно' : dewPoint > 10 ? 'Комфортно' : 'Сухо'
+      description: dewPoint > 20 ? 'Душно' : dewPoint > 10 ? 'Комфортно' : 'Сухо',
+      tooltip: `Точка росы ${Math.round(dewPoint)}°C - температура, при которой воздух насыщается влагой. ${dewPoint > 24 ? 'Очень душно и некомфортно для большинства людей' : dewPoint > 20 ? 'Душно, ощущается дискомфорт' : dewPoint > 15 ? 'Комфортная влажность' : dewPoint > 10 ? 'Приятные условия' : 'Сухой воздух, может вызывать сухость кожи'}.`
     },
     {
       icon: 'Heart',
@@ -367,30 +374,43 @@ const WeatherInformers = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 animate-fade-in">
-      {informers.map((informer, index) => (
-        <div
-          key={index}
-          className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl p-4 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer`}
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          <div className="flex flex-col items-center text-center space-y-2">
-            <div className={`p-3 ${isDarkTheme ? 'bg-white/10' : 'bg-white/60'} rounded-full transition-all group-hover:scale-110`}>
-              <Icon name={informer.icon} className={textColor} size={20} />
-            </div>
-            <div className={`text-xs ${subtextColor} font-medium uppercase tracking-wide`}>
-              {informer.label}
-            </div>
-            <div className={`text-xl font-bold ${informer.valueColor || textColor}`}>
-              {informer.value}
-            </div>
-            <div className={`text-xs ${subtextColor}`}>
-              {informer.description}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+    <TooltipProvider>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 animate-fade-in">
+        {informers.map((informer, index) => (
+          <Tooltip key={index} delayDuration={200}>
+            <TooltipTrigger asChild>
+              <div
+                className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl p-4 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <div className="flex flex-col items-center text-center space-y-2">
+                  <div className={`p-3 ${isDarkTheme ? 'bg-white/10' : 'bg-white/60'} rounded-full transition-all group-hover:scale-110`}>
+                    <Icon name={informer.icon} className={textColor} size={20} />
+                  </div>
+                  <div className={`text-xs ${subtextColor} font-medium uppercase tracking-wide`}>
+                    {informer.label}
+                  </div>
+                  <div className={`text-xl font-bold ${informer.valueColor || textColor}`}>
+                    {informer.value}
+                  </div>
+                  <div className={`text-xs ${subtextColor}`}>
+                    {informer.description}
+                  </div>
+                </div>
+              </div>
+            </TooltipTrigger>
+            {informer.tooltip && (
+              <TooltipContent 
+                className={`max-w-xs p-3 ${isDarkTheme ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'} text-sm`}
+                side="top"
+              >
+                <p className={isDarkTheme ? 'text-white' : 'text-gray-900'}>{informer.tooltip}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 };
 
