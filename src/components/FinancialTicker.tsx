@@ -1,6 +1,16 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+interface FinancialItem {
+  icon: string;
+  label: string;
+  value: string;
+  change: string;
+  changePercent: string;
+  changeColor: string;
+  tooltip: string;
+}
 
 interface FinancialTickerProps {
   isDarkTheme: boolean;
@@ -12,89 +22,182 @@ const FinancialTicker = ({ isDarkTheme }: FinancialTickerProps) => {
   const subtextColor = isDarkTheme ? 'text-white/70' : 'text-gray-600';
   const borderColor = isDarkTheme ? 'border-white/20' : 'border-gray-200';
 
-  const financialData = useMemo(() => [
+  const [financialData, setFinancialData] = useState<FinancialItem[]>([
     {
       icon: 'DollarSign',
       label: 'USD',
-      value: `${(97 + Math.random() * 3).toFixed(2)} ₽`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 1.5).toFixed(2),
-      changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
-      tooltip: `Курс доллара США к рублю. Актуальный обменный курс обновляется в режиме реального времени. Используйте для планирования покупок и инвестиций. Курс зависит от мировой экономики, цен на нефть и политической ситуации.`
+      value: '... ₽',
+      change: '+',
+      changePercent: '0.00',
+      changeColor: 'text-green-400',
+      tooltip: `Курс доллара США к рублю. Актуальный обменный курс обновляется в режиме реального времени. Используйте для планирования покупок и инвестиций.`
     },
     {
       icon: 'Euro',
       label: 'EUR',
-      value: `${(103 + Math.random() * 3).toFixed(2)} ₽`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 1.5).toFixed(2),
-      changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
-      tooltip: `Курс евро к рублю. Европейская валюта используется в 19 странах еврозоны. Курс зависит от политики ЕЦБ, экономических показателей ЕС и мировых трендов.`
+      value: '... ₽',
+      change: '+',
+      changePercent: '0.00',
+      changeColor: 'text-green-400',
+      tooltip: `Курс евро к рублю. Европейская валюта используется в 19 странах еврозоны.`
     },
     {
       icon: 'Bitcoin',
       label: 'BTC',
-      value: `$${(93000 + Math.random() * 4000).toFixed(0)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 3).toFixed(2),
-      changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
-      tooltip: `Курс биткоина в долларах США. Первая и самая популярная криптовалюта. Высокая волатильность - цена может измениться на 5-10% за день. Следите за новостями рынка и регуляторными решениями.`
+      value: '...',
+      change: '+',
+      changePercent: '0.00',
+      changeColor: 'text-green-400',
+      tooltip: `Курс биткоина в долларах США. Первая и самая популярная криптовалюта.`
     },
     {
       icon: 'TrendingUp',
       label: 'Золото',
-      value: `$${(2650 + Math.random() * 50).toFixed(0)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 1).toFixed(2),
+      value: '...',
+      change: '+',
+      changePercent: '0.00',
       changeColor: 'text-yellow-400',
-      tooltip: `Цена золота за тройскую унцию (31.1 грамм) в долларах США. Золото - традиционный защитный актив в периоды нестабильности. Используется для диверсификации инвестиционного портфеля и сохранения капитала.`
+      tooltip: `Цена золота за тройскую унцию в долларах США.`
     },
     {
       icon: 'Gem',
       label: 'Серебро',
-      value: `$${(30 + Math.random() * 2).toFixed(2)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2).toFixed(2),
+      value: '...',
+      change: '+',
+      changePercent: '0.00',
       changeColor: 'text-gray-300',
-      tooltip: `Цена серебра за тройскую унцию. Используется как в промышленности (электроника, медицина), так и в инвестициях. Более волатильно чем золото - может вырасти на 10-15% за месяц.`
-    },
-    {
-      icon: 'Zap',
-      label: 'Платина',
-      value: `$${(940 + Math.random() * 40).toFixed(0)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 1.5).toFixed(2),
-      changeColor: 'text-slate-300',
-      tooltip: `Цена платины за тройскую унцию. Редкий металл, используемый в автомобильных катализаторах (50% спроса) и ювелирных изделиях. Цена зависит от автомобильной промышленности.`
-    },
-    {
-      icon: 'Coins',
-      label: 'Палладий',
-      value: `$${(950 + Math.random() * 100).toFixed(0)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2.5).toFixed(2),
-      changeColor: 'text-cyan-300',
-      tooltip: `Цена палладия за тройскую унцию. Самый редкий металл платиновой группы, используется в катализаторах бензиновых двигателей (80% спроса). Высокая волатильность из-за ограниченного рынка.`
+      tooltip: `Цена серебра за тройскую унцию.`
     },
     {
       icon: 'BarChart3',
       label: 'Brent',
-      value: `$${(73 + Math.random() * 4).toFixed(2)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2).toFixed(2),
+      value: '...',
+      change: '+',
+      changePercent: '0.00',
       changeColor: 'text-orange-400',
-      tooltip: `Цена нефти марки Brent за баррель (159 литров). Эталонная марка для европейского и мирового рынка. От цены на нефть зависит курс рубля - при росте нефти рубль обычно укрепляется.`
-    },
-    {
-      icon: 'Factory',
-      label: 'Газ',
-      value: `$${(2.8 + Math.random() * 0.4).toFixed(2)}`,
-      change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 3).toFixed(2),
-      changeColor: 'text-blue-300',
-      tooltip: `Цена природного газа за миллион британских тепловых единиц (MMBtu). Ключевой энергоноситель для отопления и электрогенерации. Сезонность - дорожает зимой.`
+      tooltip: `Цена нефти марки Brent за баррель.`
     }
-  ], []);
+  ]);
+
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      const newData: FinancialItem[] = [];
+
+      try {
+        const cbrResponse = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+        const cbrData = await cbrResponse.json();
+        
+        const usdRate = cbrData.Valute.USD.Value;
+        const usdChange = cbrData.Valute.USD.Value - cbrData.Valute.USD.Previous;
+        const usdChangePercent = ((usdChange / cbrData.Valute.USD.Previous) * 100);
+
+        newData.push({
+          icon: 'DollarSign',
+          label: 'USD',
+          value: `${usdRate.toFixed(2)} ₽`,
+          change: usdChange >= 0 ? '+' : '',
+          changePercent: Math.abs(usdChangePercent).toFixed(2),
+          changeColor: usdChange >= 0 ? 'text-green-400' : 'text-red-400',
+          tooltip: `Курс доллара США к рублю по данным ЦБ РФ. Обновляется ежедневно.`
+        });
+
+        const eurRate = cbrData.Valute.EUR.Value;
+        const eurChange = cbrData.Valute.EUR.Value - cbrData.Valute.EUR.Previous;
+        const eurChangePercent = ((eurChange / cbrData.Valute.EUR.Previous) * 100);
+
+        newData.push({
+          icon: 'Euro',
+          label: 'EUR',
+          value: `${eurRate.toFixed(2)} ₽`,
+          change: eurChange >= 0 ? '+' : '',
+          changePercent: Math.abs(eurChangePercent).toFixed(2),
+          changeColor: eurChange >= 0 ? 'text-green-400' : 'text-red-400',
+          tooltip: `Курс евро к рублю по данным ЦБ РФ. Обновляется ежедневно.`
+        });
+      } catch (error) {
+        console.error('Ошибка загрузки курсов валют:', error);
+      }
+
+      try {
+        const cryptoResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const cryptoData = await cryptoResponse.json();
+        
+        const btcPrice = cryptoData.bitcoin.usd;
+        const btcChange = cryptoData.bitcoin.usd_24h_change;
+
+        newData.push({
+          icon: 'Bitcoin',
+          label: 'BTC',
+          value: `$${btcPrice.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+          change: btcChange >= 0 ? '+' : '',
+          changePercent: Math.abs(btcChange).toFixed(2),
+          changeColor: btcChange >= 0 ? 'text-green-400' : 'text-red-400',
+          tooltip: `Курс биткоина в долларах США. Данные от CoinGecko.`
+        });
+      } catch (error) {
+        console.error('Ошибка загрузки криптовалют:', error);
+      }
+
+      try {
+        const metalsResponse = await fetch('https://api.metals.dev/v1/latest?api_key=testkey&currency=USD&unit=toz');
+        const metalsData = await metalsResponse.json();
+        
+        if (metalsData.metals) {
+          const goldPrice = metalsData.metals.gold;
+          newData.push({
+            icon: 'TrendingUp',
+            label: 'Золото',
+            value: `$${goldPrice.toFixed(0)}`,
+            change: '+',
+            changePercent: '0.00',
+            changeColor: 'text-yellow-400',
+            tooltip: `Цена золота за тройскую унцию в долларах США.`
+          });
+
+          const silverPrice = metalsData.metals.silver;
+          newData.push({
+            icon: 'Gem',
+            label: 'Серебро',
+            value: `$${silverPrice.toFixed(2)}`,
+            change: '+',
+            changePercent: '0.00',
+            changeColor: 'text-gray-300',
+            tooltip: `Цена серебра за тройскую унцию в долларах США.`
+          });
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки металлов:', error);
+      }
+
+      try {
+        const oilResponse = await fetch('https://api.oilpriceapi.com/v1/prices/latest');
+        const oilData = await oilResponse.json();
+        
+        if (oilData.data && oilData.data.price) {
+          newData.push({
+            icon: 'BarChart3',
+            label: 'Brent',
+            value: `$${oilData.data.price.toFixed(2)}`,
+            change: '+',
+            changePercent: '0.00',
+            changeColor: 'text-orange-400',
+            tooltip: `Цена нефти марки Brent за баррель.`
+          });
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки цен на нефть:', error);
+      }
+
+      if (newData.length > 0) {
+        setFinancialData(newData);
+      }
+    };
+
+    fetchFinancialData();
+    const interval = setInterval(fetchFinancialData, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl p-4 mb-6 animate-fade-in overflow-hidden`}>
