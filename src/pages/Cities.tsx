@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
@@ -68,7 +68,17 @@ const Cities = () => {
     return 'CloudSun';
   };
 
+  const loadedCitiesRef = useRef<string>('');
+
   useEffect(() => {
+    const cityIds = filteredCities.slice(0, 20).map(c => c.id).join(',');
+    
+    if (loadedCitiesRef.current === cityIds) {
+      return;
+    }
+    
+    loadedCitiesRef.current = cityIds;
+
     const fetchWeatherForCities = async () => {
       setLoadingWeather(true);
       const weatherMap: Record<string, WeatherData> = {};
@@ -120,7 +130,7 @@ const Cities = () => {
     };
 
     fetchWeatherForCities();
-  }, [filteredCities]);
+  }, [searchQuery, selectedRegion]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
