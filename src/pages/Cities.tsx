@@ -72,30 +72,48 @@ const Cities = () => {
     const fetchWeatherForCities = async () => {
       setLoadingWeather(true);
       const weatherMap: Record<string, WeatherData> = {};
+      const citiesToFetch = filteredCities.slice(0, 20);
 
-      for (const city of filteredCities.slice(0, 20)) {
+      const fetchPromises = citiesToFetch.map(async (city) => {
         try {
           const response = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric&lang=ru`
           );
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
           const data = await response.json();
           
-          weatherMap[city.id] = {
-            temp: Math.round(data.main.temp),
-            feels_like: Math.round(data.main.feels_like),
-            humidity: data.main.humidity,
-            pressure: Math.round(data.main.pressure * 0.75),
-            wind_speed: Math.round(data.wind.speed),
-            wind_deg: data.wind.deg,
-            clouds: data.clouds.all,
-            visibility: Math.round(data.visibility / 1000),
-            description: data.weather[0].description,
-            icon: data.weather[0].icon
+          return {
+            cityId: city.id,
+            weather: {
+              temp: Math.round(data.main.temp),
+              feels_like: Math.round(data.main.feels_like),
+              humidity: data.main.humidity,
+              pressure: Math.round(data.main.pressure * 0.75),
+              wind_speed: Math.round(data.wind.speed),
+              wind_deg: data.wind.deg,
+              clouds: data.clouds.all,
+              visibility: Math.round(data.visibility / 1000),
+              description: data.weather[0].description,
+              icon: data.weather[0].icon
+            }
           };
         } catch (error) {
           console.error(`Ошибка загрузки погоды для ${city.name}:`, error);
+          return null;
         }
-      }
+      });
+
+      const results = await Promise.all(fetchPromises);
+      
+      results.forEach(result => {
+        if (result) {
+          weatherMap[result.cityId] = result.weather;
+        }
+      });
 
       setWeatherData(weatherMap);
       setLoadingWeather(false);
@@ -104,7 +122,7 @@ const Cities = () => {
     if (filteredCities.length > 0) {
       fetchWeatherForCities();
     }
-  }, [filteredCities]);
+  }, [searchQuery, selectedRegion]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
