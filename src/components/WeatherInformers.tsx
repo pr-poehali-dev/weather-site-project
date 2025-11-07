@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import InformerDetailModal from './InformerDetailModal';
 
 interface WeatherInformersProps {
   humidity: number;
@@ -21,6 +22,8 @@ const WeatherInformers = ({
   dewPoint,
   isDarkTheme
 }: WeatherInformersProps) => {
+  const [selectedInformer, setSelectedInformer] = useState<any>(null);
+  
   const cardBg = isDarkTheme ? 'bg-white/10' : 'bg-white/40';
   const textColor = isDarkTheme ? 'text-white' : 'text-gray-900';
   const subtextColor = isDarkTheme ? 'text-white/70' : 'text-gray-600';
@@ -414,43 +417,57 @@ const WeatherInformers = ({
   ];
 
   return (
-    <TooltipProvider>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 animate-fade-in">
-        {informers.map((informer, index) => (
-          <Tooltip key={index} delayDuration={200}>
-            <TooltipTrigger asChild>
-              <div
-                className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl p-4 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer`}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className={`p-3 ${isDarkTheme ? 'bg-white/10' : 'bg-white/60'} rounded-full transition-all group-hover:scale-110`}>
-                    <Icon name={informer.icon} className={textColor} size={20} />
+    <>
+      <TooltipProvider>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 animate-fade-in">
+          {informers.map((informer, index) => (
+            <Tooltip key={index} delayDuration={200}>
+              <TooltipTrigger asChild>
+                <div
+                  onClick={() => setSelectedInformer(informer)}
+                  className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-2xl p-4 hover:scale-105 hover:shadow-lg transition-all duration-300 cursor-pointer`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className={`p-3 ${isDarkTheme ? 'bg-white/10' : 'bg-white/60'} rounded-full transition-all group-hover:scale-110`}>
+                      <Icon name={informer.icon} className={textColor} size={20} />
+                    </div>
+                    <div className={`text-xs ${subtextColor} font-medium uppercase tracking-wide`}>
+                      {informer.label}
+                    </div>
+                    <div className={`text-xl font-bold ${informer.valueColor || textColor}`}>
+                      {informer.value}
+                    </div>
+                    <div className={`text-xs ${subtextColor}`}>
+                      {informer.description}
+                    </div>
                   </div>
-                  <div className={`text-xs ${subtextColor} font-medium uppercase tracking-wide`}>
-                    {informer.label}
-                  </div>
-                  <div className={`text-xl font-bold ${informer.valueColor || textColor}`}>
-                    {informer.value}
-                  </div>
-                  <div className={`text-xs ${subtextColor}`}>
-                    {informer.description}
+                  <div className="flex justify-center mt-2">
+                    <Icon name="Maximize2" size={14} className={`${subtextColor} opacity-0 group-hover:opacity-100 transition-opacity`} />
                   </div>
                 </div>
-              </div>
-            </TooltipTrigger>
-            {informer.tooltip && (
-              <TooltipContent 
-                className={`max-w-xs p-3 ${isDarkTheme ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'} text-sm`}
-                side="top"
-              >
-                <p className={isDarkTheme ? 'text-white' : 'text-gray-900'}>{informer.tooltip}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
+              </TooltipTrigger>
+              {informer.tooltip && (
+                <TooltipContent 
+                  className={`max-w-xs p-3 ${isDarkTheme ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'} text-sm`}
+                  side="top"
+                >
+                  <p className={isDarkTheme ? 'text-white' : 'text-gray-900'}>{informer.tooltip}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          ))}
+        </div>
+      </TooltipProvider>
+
+      {selectedInformer && (
+        <InformerDetailModal
+          informer={selectedInformer}
+          isDarkTheme={isDarkTheme}
+          onClose={() => setSelectedInformer(null)}
+        />
+      )}
+    </>
   );
 };
 
