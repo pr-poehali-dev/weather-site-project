@@ -11,6 +11,7 @@ import WeatherInformers from '@/components/WeatherInformers';
 import WeatherDetailsWidgets from '@/components/WeatherDetailsWidgets';
 import WeatherCharts from '@/components/WeatherCharts';
 import WeeklyForecast from '@/components/WeeklyForecast';
+import WeatherMap from '@/components/WeatherMap';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
@@ -665,27 +666,11 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="map">
-              <div className={`${cardBg} rounded-2xl p-8 text-center backdrop-blur-sm`}>
-                <Icon name="Map" className={`${textColor} mx-auto mb-4 animate-pulse-glow`} size={80} />
-                <h4 className={`text-2xl font-semibold ${textColor} mb-2`}>Интерактивная карта погоды</h4>
-                <p className={`${textSecondary} mb-6`}>
-                  Радар осадков и температурная карта региона
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <div className={`p-4 ${cardBg} rounded-xl`}>
-                    <Icon name="Navigation" className={`${textColor} mx-auto mb-2`} size={32} />
-                    <p className={`${textColor} font-medium`}>Навигация</p>
-                  </div>
-                  <div className={`p-4 ${cardBg} rounded-xl`}>
-                    <Icon name="Layers" className={`${textColor} mx-auto mb-2`} size={32} />
-                    <p className={`${textColor} font-medium`}>Слои карты</p>
-                  </div>
-                  <div className={`p-4 ${cardBg} rounded-xl`}>
-                    <Icon name="Zap" className={`${textColor} mx-auto mb-2`} size={32} />
-                    <p className={`${textColor} font-medium`}>Грозы</p>
-                  </div>
-                </div>
-              </div>
+              <WeatherMap
+                isDarkTheme={isDarkTheme}
+                currentCity={currentCity}
+                currentTemp={parseInt(currentTemp)}
+              />
             </TabsContent>
           </Tabs>
         </Card>
