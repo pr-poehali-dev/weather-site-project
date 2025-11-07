@@ -14,6 +14,7 @@ import WeeklyForecast from '@/components/WeeklyForecast';
 import WeatherMap from '@/components/WeatherMap';
 import NotificationSettings from '@/components/NotificationSettings';
 import FinancialTicker from '@/components/FinancialTicker';
+import NewsModal from '@/components/NewsModal';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
 import { notificationService } from '@/utils/notificationService';
@@ -107,6 +108,7 @@ const Index = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>(
     notificationService.getPermissionStatus()
   );
+  const [selectedNews, setSelectedNews] = useState<any>(null);
 
   useWeatherMonitor(favorites);
   usePushNotifications(weather, notificationSettings);
@@ -328,16 +330,25 @@ const Index = () => {
       title: 'Сильные дожди ожидаются в выходные',
       time: '2 часа назад',
       category: 'Предупреждение',
+      content: `Синоптики предупреждают о приближении мощного циклона, который принесёт обильные осадки в центральные регионы страны. Ожидается, что дожди начнутся в пятницу вечером и продлятся до воскресенья.\n\nПо прогнозам метеорологов, за выходные может выпасть до 50-70 мм осадков, что составляет месячную норму. Особенно сильные ливни ожидаются в субботу днём и вечером.\n\nВ связи с неблагоприятными погодными условиями рекомендуется воздержаться от поездок на личном транспорте, быть осторожными вблизи водоёмов и не находиться под деревьями во время грозы. Возможны подтопления низин и проблемы с дорожным движением.\n\nЭкстренные службы переведены в режим повышенной готовности. Жителям рекомендуется следить за обновлениями прогноза и соблюдать меры предосторожности.`,
+      source: 'Гидрометцентр России',
+      image: 'https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=800'
     },
     {
       title: 'Температурный рекорд побит в Сочи',
       time: '5 часов назад',
       category: 'Новости',
+      content: `В Сочи зафиксирована рекордная температура для ноября - термометры показали +28°C, что на 5 градусов выше предыдущего максимума, установленного в 1987 году.\n\nПо словам метеорологов, такая аномально тёплая погода связана с приходом тропического воздуха из Средиземноморья и антициклоном над Чёрным морем. Тёплая погода сохранится как минимум до конца недели.\n\nНа пляжах курорта наблюдается необычная для ноября активность - сотни людей загорают и купаются в море. Температура воды составляет комфортные +22°C.\n\nОднако климатологи предупреждают, что такие температурные аномалии являются следствием глобального изменения климата и могут привести к непредсказуемым последствиям для экосистемы региона в долгосрочной перспективе.`,
+      source: 'Метеостанция Сочи',
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800'
     },
     {
       title: 'Прогноз погоды на следующую неделю',
       time: '8 часов назад',
       category: 'Прогноз',
+      content: `Следующая неделя принесёт значительные изменения в погоде по всей стране. Синоптики прогнозируют похолодание и переход от дождей к первому снегу в северных регионах.\n\nВ понедельник и вторник ожидается переменная облачность с прояснениями, температура воздуха днём составит +8...+12°C. Ветер западный, умеренный, порывами до 15 м/с.\n\nСо среды начнётся заметное похолодание - холодный арктический воздух распространится на европейскую часть России. Температура понизится до +2...+5°C днём и до -2...0°C ночью. В четверг возможен первый снег с дождём.\n\nК выходным установится типичная для ноября погода: облачно, временами осадки, температура около 0°C. Водителям рекомендуется подготовить автомобили к зимнему сезону и сменить резину на зимнюю.`,
+      source: 'Росгидромет',
+      image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=800'
     },
   ];
 
@@ -662,13 +673,17 @@ const Index = () => {
                 {news.map((item, index) => (
                   <div
                     key={index}
-                    className={`p-4 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer`}
+                    onClick={() => setSelectedNews(item)}
+                    className={`p-4 ${cardBg} rounded-xl backdrop-blur-sm hover:bg-white/30 transition-all cursor-pointer group`}
                   >
                     <Badge className="bg-accent/80 text-white border-none mb-2 text-xs">
                       {item.category}
                     </Badge>
-                    <p className={`${textColor} font-medium mb-1`}>{item.title}</p>
-                    <p className={`${textSecondary} text-sm`}>{item.time}</p>
+                    <p className={`${textColor} font-medium mb-1 group-hover:text-primary transition-colors`}>{item.title}</p>
+                    <div className="flex items-center justify-between">
+                      <p className={`${textSecondary} text-sm`}>{item.time}</p>
+                      <Icon name="ChevronRight" className={`${textSecondary} group-hover:${textColor} transition-all group-hover:translate-x-1`} size={18} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -795,6 +810,14 @@ const Index = () => {
             localStorage.setItem('weatherNotificationSettings', JSON.stringify(settings));
           }}
           currentSettings={notificationSettings}
+        />
+      )}
+
+      {selectedNews && (
+        <NewsModal
+          news={selectedNews}
+          onClose={() => setSelectedNews(null)}
+          isDarkTheme={isDarkTheme}
         />
       )}
     </div>
