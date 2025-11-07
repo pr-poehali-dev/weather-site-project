@@ -16,43 +16,43 @@ const FinancialTicker = ({ isDarkTheme }: FinancialTickerProps) => {
     {
       icon: 'DollarSign',
       label: 'USD',
-      value: `${(95 + Math.random() * 5).toFixed(2)} ₽`,
+      value: `${(97 + Math.random() * 3).toFixed(2)} ₽`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2).toFixed(2),
+      changePercent: (Math.random() * 1.5).toFixed(2),
       changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
       tooltip: `Курс доллара США к рублю. Актуальный обменный курс обновляется в режиме реального времени. Используйте для планирования покупок и инвестиций. Курс зависит от мировой экономики, цен на нефть и политической ситуации.`
     },
     {
       icon: 'Euro',
       label: 'EUR',
-      value: `${(100 + Math.random() * 5).toFixed(2)} ₽`,
+      value: `${(103 + Math.random() * 3).toFixed(2)} ₽`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2).toFixed(2),
+      changePercent: (Math.random() * 1.5).toFixed(2),
       changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
       tooltip: `Курс евро к рублю. Европейская валюта используется в 19 странах еврозоны. Курс зависит от политики ЕЦБ, экономических показателей ЕС и мировых трендов.`
     },
     {
       icon: 'Bitcoin',
       label: 'BTC',
-      value: `$${(42000 + Math.random() * 8000).toFixed(0)}`,
+      value: `$${(93000 + Math.random() * 4000).toFixed(0)}`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 5).toFixed(2),
+      changePercent: (Math.random() * 3).toFixed(2),
       changeColor: Math.random() > 0.5 ? 'text-green-400' : 'text-red-400',
       tooltip: `Курс биткоина в долларах США. Первая и самая популярная криптовалюта. Высокая волатильность - цена может измениться на 5-10% за день. Следите за новостями рынка и регуляторными решениями.`
     },
     {
       icon: 'TrendingUp',
       label: 'Золото',
-      value: `$${(2000 + Math.random() * 100).toFixed(0)}`,
+      value: `$${(2650 + Math.random() * 50).toFixed(0)}`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 1.5).toFixed(2),
+      changePercent: (Math.random() * 1).toFixed(2),
       changeColor: 'text-yellow-400',
       tooltip: `Цена золота за тройскую унцию (31.1 грамм) в долларах США. Золото - традиционный защитный актив в периоды нестабильности. Используется для диверсификации инвестиционного портфеля и сохранения капитала.`
     },
     {
       icon: 'Gem',
       label: 'Серебро',
-      value: `$${(24 + Math.random() * 2).toFixed(2)}`,
+      value: `$${(30 + Math.random() * 2).toFixed(2)}`,
       change: Math.random() > 0.5 ? '+' : '-',
       changePercent: (Math.random() * 2).toFixed(2),
       changeColor: 'text-gray-300',
@@ -61,7 +61,7 @@ const FinancialTicker = ({ isDarkTheme }: FinancialTickerProps) => {
     {
       icon: 'Zap',
       label: 'Платина',
-      value: `$${(950 + Math.random() * 50).toFixed(0)}`,
+      value: `$${(940 + Math.random() * 40).toFixed(0)}`,
       change: Math.random() > 0.5 ? '+' : '-',
       changePercent: (Math.random() * 1.5).toFixed(2),
       changeColor: 'text-slate-300',
@@ -70,25 +70,25 @@ const FinancialTicker = ({ isDarkTheme }: FinancialTickerProps) => {
     {
       icon: 'Coins',
       label: 'Палладий',
-      value: `$${(1000 + Math.random() * 200).toFixed(0)}`,
+      value: `$${(950 + Math.random() * 100).toFixed(0)}`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 3).toFixed(2),
+      changePercent: (Math.random() * 2.5).toFixed(2),
       changeColor: 'text-cyan-300',
       tooltip: `Цена палладия за тройскую унцию. Самый редкий металл платиновой группы, используется в катализаторах бензиновых двигателей (80% спроса). Высокая волатильность из-за ограниченного рынка.`
     },
     {
       icon: 'BarChart3',
       label: 'Brent',
-      value: `$${(80 + Math.random() * 10).toFixed(2)}`,
+      value: `$${(73 + Math.random() * 4).toFixed(2)}`,
       change: Math.random() > 0.5 ? '+' : '-',
-      changePercent: (Math.random() * 2.5).toFixed(2),
+      changePercent: (Math.random() * 2).toFixed(2),
       changeColor: 'text-orange-400',
       tooltip: `Цена нефти марки Brent за баррель (159 литров). Эталонная марка для европейского и мирового рынка. От цены на нефть зависит курс рубля - при росте нефти рубль обычно укрепляется.`
     },
     {
       icon: 'Factory',
       label: 'Газ',
-      value: `$${(2.5 + Math.random() * 0.5).toFixed(2)}`,
+      value: `$${(2.8 + Math.random() * 0.4).toFixed(2)}`,
       change: Math.random() > 0.5 ? '+' : '-',
       changePercent: (Math.random() * 3).toFixed(2),
       changeColor: 'text-blue-300',
