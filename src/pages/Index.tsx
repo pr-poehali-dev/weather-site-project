@@ -668,8 +668,8 @@ const Index = () => {
             <TabsContent value="map">
               <WeatherMap
                 isDarkTheme={isDarkTheme}
-                currentCity={currentCity}
-                currentTemp={parseInt(currentTemp)}
+                currentCity={weather.location}
+                currentTemp={weather.temp}
               />
             </TabsContent>
           </Tabs>
