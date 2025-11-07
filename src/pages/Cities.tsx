@@ -119,10 +119,8 @@ const Cities = () => {
       setLoadingWeather(false);
     };
 
-    if (filteredCities.length > 0) {
-      fetchWeatherForCities();
-    }
-  }, [searchQuery, selectedRegion]);
+    fetchWeatherForCities();
+  }, [filteredCities]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
