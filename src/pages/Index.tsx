@@ -8,6 +8,7 @@ import WeatherAlert from '@/components/WeatherAlert';
 import CityComparison from '@/components/CityComparison';
 import WeatherNotifications from '@/components/WeatherNotifications';
 import WeatherInformers from '@/components/WeatherInformers';
+import WeatherDetailsWidgets from '@/components/WeatherDetailsWidgets';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
@@ -576,6 +577,16 @@ const Index = () => {
           visibility={10}
           uvIndex={5}
           dewPoint={weather.feelsLike - 2}
+          isDarkTheme={isDarkTheme}
+        />
+
+        <WeatherDetailsWidgets
+          sunrise="06:24"
+          sunset="18:45"
+          moonPhase="Растущая луна"
+          airQuality={45}
+          precipitation={25}
+          cloudCover={60}
           isDarkTheme={isDarkTheme}
         />
 
