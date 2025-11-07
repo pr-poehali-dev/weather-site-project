@@ -13,6 +13,7 @@ import WeatherCharts from '@/components/WeatherCharts';
 import WeeklyForecast from '@/components/WeeklyForecast';
 import WeatherMap from '@/components/WeatherMap';
 import NotificationSettings from '@/components/NotificationSettings';
+import FinancialTicker from '@/components/FinancialTicker';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
 import { notificationService } from '@/utils/notificationService';
@@ -413,6 +414,8 @@ const Index = () => {
         isDarkTheme={isDarkTheme}
       />
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+        <FinancialTicker isDarkTheme={isDarkTheme} />
+        
         <header className="text-center py-8 animate-fade-in relative">
           <div className="absolute top-4 right-4 flex items-center gap-3">
             <div className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full px-4 py-2 flex items-center gap-3 animate-fade-in`}>
