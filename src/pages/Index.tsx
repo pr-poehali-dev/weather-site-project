@@ -15,6 +15,8 @@ import WeatherMap from '@/components/WeatherMap';
 import NotificationSettings from '@/components/NotificationSettings';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
+import { notificationService } from '@/utils/notificationService';
+import { Button } from '@/components/ui/button';
 
 interface WeatherData {
   temp: number;
@@ -101,9 +103,30 @@ const Index = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>(
+    notificationService.getPermissionStatus()
+  );
 
   useWeatherMonitor(favorites);
   usePushNotifications(weather, notificationSettings);
+
+  useEffect(() => {
+    notificationService.checkWeatherAlert(
+      'Температура',
+      `${weather.temp}°C`,
+      weather.condition
+    );
+    notificationService.checkWeatherAlert(
+      'Скорость ветра',
+      `${weather.windSpeed} м/с`,
+      'Ветер'
+    );
+    notificationService.checkWeatherAlert(
+      'Влажность',
+      `${weather.humidity}%`,
+      'Влажность воздуха'
+    );
+  }, [weather]);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
@@ -327,9 +350,62 @@ const Index = () => {
   const borderColor = isDarkTheme ? 'border-white/20' : 'border-gray-200';
   const inputBg = isDarkTheme ? 'bg-white/20 border-white/30' : 'bg-white/60 border-gray-300';
 
+  const handleEnableNotifications = async () => {
+    const granted = await notificationService.requestPermission();
+    if (granted) {
+      setNotificationPermission('granted');
+      notificationService.showNotification(
+        '🔔 Уведомления включены!',
+        { body: 'Вы будете получать оповещения о важных изменениях погоды' }
+      );
+    } else {
+      setNotificationPermission('denied');
+    }
+  };
+
   return (
     <div className={`min-h-screen ${bgGradient} p-4 md:p-8 transition-all duration-500 relative overflow-hidden`}>
       <WeatherAnimation weatherCode={currentWeatherCode} />
+      
+      {notificationPermission === 'default' && (
+        <div className={`fixed top-4 right-4 z-50 ${cardBg} backdrop-blur-xl border ${borderColor} rounded-2xl p-4 shadow-2xl max-w-md animate-slide-in`}>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <Icon name="Bell" size={24} className="text-blue-500" />
+            </div>
+            <div className="flex-1">
+              <div className={`font-semibold ${textColor} mb-1`}>Включить уведомления?</div>
+              <div className={`text-sm ${textSecondary} mb-3`}>
+                Получайте оповещения о резких изменениях погоды, экстремальных температурах и сильном ветре
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleEnableNotifications}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  size="sm"
+                >
+                  <Icon name="Check" size={16} className="mr-2" />
+                  Включить
+                </Button>
+                <Button
+                  onClick={() => setNotificationPermission('denied')}
+                  variant="outline"
+                  size="sm"
+                >
+                  Позже
+                </Button>
+              </div>
+            </div>
+            <button
+              onClick={() => setNotificationPermission('denied')}
+              className={`${textSecondary} hover:${textColor} transition-colors`}
+            >
+              <Icon name="X" size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+      
       <WeatherAlert 
         weatherCode={currentWeatherCode} 
         temp={weather.temp} 
