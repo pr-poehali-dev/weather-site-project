@@ -13,6 +13,7 @@ import WeatherCharts from '@/components/WeatherCharts';
 import WeeklyForecast from '@/components/WeeklyForecast';
 import WeatherMap from '@/components/WeatherMap';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface WeatherData {
   temp: number;
@@ -87,6 +88,7 @@ const Index = () => {
   const favoritesRef = useRef<HTMLDivElement>(null);
 
   useWeatherMonitor(favorites);
+  usePushNotifications(weather);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
