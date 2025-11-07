@@ -22,6 +22,7 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
   const [selectedPeriod, setSelectedPeriod] = useState<'24h' | '7d' | '30d'>('24h');
   const modalRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const generateHistoryData = (period: '24h' | '7d' | '30d') => {
     const points = period === '24h' ? 24 : period === '7d' ? 7 : 30;
@@ -159,6 +160,51 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
     }
   };
 
+  const shareToSocial = (platform: 'telegram' | 'vk' | 'whatsapp' | 'twitter') => {
+    const text = `${informer.label}: ${informer.value}\n${informer.description}`;
+    const url = window.location.href;
+    
+    const shareUrls: Record<string, string> = {
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+      vk: `https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(informer.label)}&description=${encodeURIComponent(text)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + '\n' + url)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+    };
+    
+    window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+    setShowShareMenu(false);
+  };
+
+  const shareViaEmail = () => {
+    const subject = encodeURIComponent(`${informer.label} - Данные погоды`);
+    const body = encodeURIComponent(`
+${informer.label}: ${informer.value}
+
+${informer.description}
+
+${informer.tooltip || ''}
+
+Данные за период: ${selectedPeriod === '24h' ? '24 часа' : selectedPeriod === '7d' ? '7 дней' : '30 дней'}
+
+Просмотреть подробнее: ${window.location.href}
+    `);
+    
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    setShowShareMenu(false);
+  };
+
+  const copyToClipboard = async () => {
+    const text = `${informer.label}: ${informer.value}\n${informer.description}\n${window.location.href}`;
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Скопировано в буфер обмена!');
+      setShowShareMenu(false);
+    } catch (error) {
+      console.error('Ошибка копирования:', error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
       <Card ref={modalRef} className={`w-full max-w-4xl ${cardBg} ${textColor} max-h-[90vh] overflow-y-auto`}>
@@ -192,6 +238,70 @@ const InformerDetailModal = ({ informer, isDarkTheme, onClose }: InformerDetailM
               >
                 <Icon name={isExporting ? "Loader2" : "Camera"} size={20} className={isExporting ? "animate-spin" : ""} />
               </Button>
+              <div className="relative">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  title="Поделиться"
+                >
+                  <Icon name="Share2" size={20} />
+                </Button>
+                
+                {showShareMenu && (
+                  <div className={`absolute right-0 top-12 ${isDarkTheme ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl p-2 z-50 min-w-[200px]`}>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={() => shareToSocial('telegram')}
+                    >
+                      <Icon name="Send" size={18} className="text-blue-500" />
+                      Telegram
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={() => shareToSocial('whatsapp')}
+                    >
+                      <Icon name="MessageCircle" size={18} className="text-green-500" />
+                      WhatsApp
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={() => shareToSocial('vk')}
+                    >
+                      <Icon name="Users" size={18} className="text-blue-600" />
+                      ВКонтакте
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={() => shareToSocial('twitter')}
+                    >
+                      <Icon name="Twitter" size={18} className="text-sky-500" />
+                      Twitter
+                    </Button>
+                    <div className={`my-2 h-px ${isDarkTheme ? 'bg-gray-700' : 'bg-gray-200'}`} />
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={shareViaEmail}
+                    >
+                      <Icon name="Mail" size={18} className="text-red-500" />
+                      Email
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start gap-3"
+                      onClick={copyToClipboard}
+                    >
+                      <Icon name="Copy" size={18} className="text-gray-500" />
+                      Копировать
+                    </Button>
+                  </div>
+                )}
+              </div>
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <Icon name="X" size={24} />
               </Button>
