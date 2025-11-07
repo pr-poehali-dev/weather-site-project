@@ -16,6 +16,7 @@ import WeatherMap from '@/components/WeatherMap';
 import NotificationSettings from '@/components/NotificationSettings';
 import FinancialTicker from '@/components/FinancialTicker';
 import NewsModal from '@/components/NewsModal';
+import CitiesGrid from '@/components/CitiesGrid';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
 import { notificationService } from '@/utils/notificationService';
@@ -803,6 +804,8 @@ const Index = () => {
             </TabsContent>
           </Tabs>
         </Card>
+
+        <CitiesGrid isDarkTheme={isDarkTheme} />
       </div>
 
       {showComparison && (
