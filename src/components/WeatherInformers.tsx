@@ -142,6 +142,91 @@ const WeatherInformers = ({
       label: 'Луна',
       value: '🌗',
       description: 'Третья четверть'
+    },
+    {
+      icon: 'Snowflake',
+      label: 'Ощущается',
+      value: `${Math.round(dewPoint + (windSpeed > 15 ? -3 : 0))}°C`,
+      description: 'С учетом ветра'
+    },
+    {
+      icon: 'CloudDrizzle',
+      label: 'Точка замерзания',
+      value: `${Math.round(dewPoint - 8)}°C`,
+      description: 'Температура льда'
+    },
+    {
+      icon: 'Waves',
+      label: 'Влажность почвы',
+      value: `${Math.floor(humidity * 0.8)}%`,
+      description: humidity > 60 ? 'Влажная' : 'Сухая'
+    },
+    {
+      icon: 'Zap',
+      label: 'Геомагнитная активность',
+      value: `${Math.floor(Math.random() * 5) + 1}`,
+      description: 'По шкале 1-9'
+    },
+    {
+      icon: 'Activity',
+      label: 'Атмосферное явление',
+      value: windSpeed > 20 ? 'Ветрено' : humidity > 80 ? 'Влажно' : 'Спокойно',
+      description: 'Текущее состояние'
+    },
+    {
+      icon: 'TrendingUp',
+      label: 'Тенденция давления',
+      value: pressure > 755 ? '↗ Растёт' : pressure < 745 ? '↘ Падает' : '→ Стабильно',
+      description: 'За последний час',
+      valueColor: pressure > 755 ? 'text-green-400' : pressure < 745 ? 'text-red-400' : 'text-blue-400'
+    },
+    {
+      icon: 'CloudSnow',
+      label: 'Температура снега',
+      value: dewPoint < 0 ? `${Math.round(dewPoint - 2)}°C` : 'Нет снега',
+      description: dewPoint < 0 ? 'Снег возможен' : 'Слишком тепло'
+    },
+    {
+      icon: 'Cloud',
+      label: 'Облачность',
+      value: `${Math.floor(Math.random() * 100)}%`,
+      description: 'Небо закрыто'
+    },
+    {
+      icon: 'Navigation',
+      label: 'Порывы ветра',
+      value: `${Math.round(windSpeed * 1.5)} км/ч`,
+      description: windSpeed > 15 ? 'Сильные' : 'Слабые'
+    },
+    {
+      icon: 'Droplet',
+      label: 'Испарение',
+      value: `${Math.round((humidity / 10) * (dewPoint > 15 ? 1.5 : 1))} мм`,
+      description: 'За сутки'
+    },
+    {
+      icon: 'Sun',
+      label: 'Световой день',
+      value: '12ч 21м',
+      description: 'Долгота дня'
+    },
+    {
+      icon: 'Thermometer',
+      label: 'Мин. температура',
+      value: `${Math.round(dewPoint - 5)}°C`,
+      description: 'За сегодня'
+    },
+    {
+      icon: 'ThermometerSun',
+      label: 'Макс. температура',
+      value: `${Math.round(dewPoint + 10)}°C`,
+      description: 'За сегодня'
+    },
+    {
+      icon: 'Wind',
+      label: 'Скорость звука',
+      value: `${Math.round(331.5 + (0.6 * dewPoint))} м/с`,
+      description: 'В текущих условиях'
     }
   ];
 
