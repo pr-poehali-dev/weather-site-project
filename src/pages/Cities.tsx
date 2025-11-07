@@ -68,17 +68,9 @@ const Cities = () => {
     return 'CloudSun';
   };
 
-  const loadedCitiesRef = useRef<string>('');
-
   useEffect(() => {
-    const cityIds = filteredCities.slice(0, 20).map(c => c.id).join(',');
+    let isCancelled = false;
     
-    if (loadedCitiesRef.current === cityIds) {
-      return;
-    }
-    
-    loadedCitiesRef.current = cityIds;
-
     const fetchWeatherForCities = async () => {
       setLoadingWeather(true);
       const weatherMap: Record<string, WeatherData> = {};
@@ -119,18 +111,24 @@ const Cities = () => {
 
       const results = await Promise.all(fetchPromises);
       
-      results.forEach(result => {
-        if (result) {
-          weatherMap[result.cityId] = result.weather;
-        }
-      });
+      if (!isCancelled) {
+        results.forEach(result => {
+          if (result) {
+            weatherMap[result.cityId] = result.weather;
+          }
+        });
 
-      setWeatherData(weatherMap);
-      setLoadingWeather(false);
+        setWeatherData(weatherMap);
+        setLoadingWeather(false);
+      }
     };
 
     fetchWeatherForCities();
-  }, [searchQuery, selectedRegion]);
+    
+    return () => {
+      isCancelled = true;
+    };
+  }, [filteredCities]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0EA5E9] via-[#8B5CF6] to-[#F97316] p-4 md:p-8">
