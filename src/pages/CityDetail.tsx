@@ -47,10 +47,18 @@ const CityDetail = () => {
 
   const fetchWeather = async (lat: number, lon: number) => {
     try {
+      console.log('🌤️ Загружаем погоду для координат:', lat, lon);
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric&lang=ru`
       );
+      console.log('📡 Ответ API:', response.status, response.ok);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('✅ Данные погоды получены:', data);
       
       setWeather({
         temp: data.main.temp,
@@ -70,7 +78,7 @@ const CityDetail = () => {
       });
       setLoading(false);
     } catch (error) {
-      console.error('Weather fetch error:', error);
+      console.error('❌ Ошибка загрузки погоды:', error);
       setLoading(false);
     }
   };
