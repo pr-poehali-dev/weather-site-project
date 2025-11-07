@@ -72,9 +72,11 @@ const Cities = () => {
     let isCancelled = false;
     
     const fetchWeatherForCities = async () => {
+      console.log('🌤️ Начинаем загрузку погоды для', filteredCities.length, 'городов');
       setLoadingWeather(true);
       const weatherMap: Record<string, WeatherData> = {};
       const citiesToFetch = filteredCities.slice(0, 20);
+      console.log('🎯 Будем загружать погоду для', citiesToFetch.length, 'городов');
 
       const fetchPromises = citiesToFetch.map(async (city) => {
         try {
@@ -110,6 +112,7 @@ const Cities = () => {
       });
 
       const results = await Promise.all(fetchPromises);
+      console.log('📊 Получено результатов:', results.filter(r => r !== null).length, 'из', results.length);
       
       if (!isCancelled) {
         results.forEach(result => {
@@ -118,6 +121,7 @@ const Cities = () => {
           }
         });
 
+        console.log('✅ Погода загружена для городов:', Object.keys(weatherMap));
         setWeatherData(weatherMap);
         setLoadingWeather(false);
       }
