@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
@@ -67,6 +68,7 @@ const getWeatherIcon = (code: number): string => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [weather, setWeather] = useState<WeatherData>({
     temp: 24,
     feelsLike: 22,
@@ -428,6 +430,15 @@ const Index = () => {
         <FinancialTicker isDarkTheme={isDarkTheme} />
         
         <header className="text-center py-8 animate-fade-in relative">
+          <div className="absolute top-4 left-4">
+            <button
+              onClick={() => navigate('/cities')}
+              className={`p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all group`}
+              title="Города России"
+            >
+              <Icon name="MapPin" className={`${textColor} group-hover:text-primary transition-colors`} size={24} />
+            </button>
+          </div>
           <div className="absolute top-4 right-4 flex items-center gap-3">
             <div className={`${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full px-4 py-2 flex items-center gap-3 animate-fade-in`}>
               <Icon name={getWeatherIcon(currentWeatherCode)} className={textColor} size={28} />
