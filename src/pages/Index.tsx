@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import WeatherAnimation from '@/components/WeatherAnimation';
 import WeatherAlert from '@/components/WeatherAlert';
 import CityComparison from '@/components/CityComparison';
+import WeatherNotifications from '@/components/WeatherNotifications';
+import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
 
 interface WeatherData {
   temp: number;
@@ -78,6 +80,8 @@ const Index = () => {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
+
+  useWeatherMonitor(favorites);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
@@ -317,6 +321,7 @@ const Index = () => {
               <Icon name={getWeatherIcon(currentWeatherCode)} className={textColor} size={28} />
               <span className={`text-2xl font-bold ${textColor}`}>{Math.round(weather.temp)}°</span>
             </div>
+            <WeatherNotifications isDarkTheme={isDarkTheme} />
             <button
               onClick={toggleTheme}
               className={`p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
