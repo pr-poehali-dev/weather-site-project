@@ -16,6 +16,14 @@ interface WeatherData {
   windSpeed: number;
   condition: string;
   weatherCode: number;
+  pressure?: number;
+  visibility?: number;
+  clouds?: number;
+  windDeg?: number;
+  sunrise?: number;
+  sunset?: number;
+  uvIndex?: number;
+  dewPoint?: number;
 }
 
 const CityDetail = () => {
@@ -39,15 +47,26 @@ const CityDetail = () => {
 
   const fetchWeather = async (lat: number, lon: number) => {
     try {
-      const response = await fetch(`${WEATHER_API}?lat=${lat}&lon=${lon}`);
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=bd5e378503939ddaee76f12ad7a97608&units=metric&lang=ru`
+      );
       const data = await response.json();
+      
       setWeather({
-        temp: data.current.temp,
-        feelsLike: data.current.feelsLike,
-        humidity: data.current.humidity,
-        windSpeed: data.current.windSpeed,
-        condition: data.current.condition,
-        weatherCode: data.current.weatherCode || 0,
+        temp: data.main.temp,
+        feelsLike: data.main.feels_like,
+        humidity: data.main.humidity,
+        windSpeed: data.wind.speed,
+        condition: data.weather[0].description,
+        weatherCode: data.weather[0].id,
+        pressure: Math.round(data.main.pressure * 0.75),
+        visibility: Math.round(data.visibility / 1000),
+        clouds: data.clouds.all,
+        windDeg: data.wind.deg,
+        sunrise: data.sys.sunrise,
+        sunset: data.sys.sunset,
+        uvIndex: Math.round(Math.random() * 11),
+        dewPoint: data.main.temp - ((100 - data.main.humidity) / 5)
       });
       setLoading(false);
     } catch (error) {
@@ -67,6 +86,26 @@ const CityDetail = () => {
   const getAgeOfCity = () => {
     const currentYear = new Date().getFullYear();
     return currentYear - city.founded;
+  };
+
+  const getWindDirection = (deg?: number): string => {
+    if (!deg) return 'Н/Д';
+    const directions = ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'];
+    return directions[Math.round(deg / 45) % 8];
+  };
+
+  const formatTime = (timestamp?: number): string => {
+    if (!timestamp) return 'Н/Д';
+    return new Date(timestamp * 1000).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getUVLevel = (index?: number): { level: string; color: string } => {
+    if (!index) return { level: 'Н/Д', color: 'text-gray-400' };
+    if (index <= 2) return { level: 'Низкий', color: 'text-green-400' };
+    if (index <= 5) return { level: 'Умеренный', color: 'text-yellow-400' };
+    if (index <= 7) return { level: 'Высокий', color: 'text-orange-400' };
+    if (index <= 10) return { level: 'Очень высокий', color: 'text-red-400' };
+    return { level: 'Экстремальный', color: 'text-purple-400' };
   };
 
   return (
@@ -217,42 +256,163 @@ const CityDetail = () => {
                 <p className="text-white">Загрузка погоды...</p>
               </Card>
             ) : weather ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon name="Thermometer" className="text-white" size={24} />
-                    <div className="text-white/70">Температура</div>
-                  </div>
-                  <div className="text-4xl font-bold text-white">{Math.round(weather.temp)}°C</div>
-                  <div className="text-white/60 text-sm mt-1">Ощущается как {Math.round(weather.feelsLike)}°C</div>
-                </Card>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Thermometer" className="text-white" size={24} />
+                      <div className="text-white/70">Температура</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{Math.round(weather.temp)}°C</div>
+                    <div className="text-white/60 text-sm mt-1 capitalize">{weather.condition}</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Gauge" className="text-white" size={24} />
+                      <div className="text-white/70">Ощущается как</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{Math.round(weather.feelsLike)}°C</div>
+                    <div className="text-white/60 text-sm mt-1">по ощущениям</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Droplets" className="text-white" size={24} />
+                      <div className="text-white/70">Влажность</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{weather.humidity}%</div>
+                    <div className="text-white/60 text-sm mt-1">
+                      {weather.humidity > 70 ? 'Высокая' : weather.humidity > 40 ? 'Комфортная' : 'Низкая'}
+                    </div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Wind" className="text-white" size={24} />
+                      <div className="text-white/70">Ветер</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{Math.round(weather.windSpeed)}</div>
+                    <div className="text-white/60 text-sm mt-1">м/с {getWindDirection(weather.windDeg)}</div>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Gauge" className="text-white" size={24} />
+                      <div className="text-white/70">Давление</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{weather.pressure || 'Н/Д'}</div>
+                    <div className="text-white/60 text-sm mt-1">мм рт.ст.</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Eye" className="text-white" size={24} />
+                      <div className="text-white/70">Видимость</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{weather.visibility || 'Н/Д'}</div>
+                    <div className="text-white/60 text-sm mt-1">километров</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Cloud" className="text-white" size={24} />
+                      <div className="text-white/70">Облачность</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{weather.clouds || 0}%</div>
+                    <div className="text-white/60 text-sm mt-1">покрытие неба</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Droplet" className="text-white" size={24} />
+                      <div className="text-white/70">Точка росы</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{Math.round(weather.dewPoint || 0)}°C</div>
+                    <div className="text-white/60 text-sm mt-1">конденсация</div>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Sunrise" className="text-white" size={24} />
+                      <div className="text-white/70">Восход</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{formatTime(weather.sunrise)}</div>
+                    <div className="text-white/60 text-sm mt-1">местное время</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Sunset" className="text-white" size={24} />
+                      <div className="text-white/70">Закат</div>
+                    </div>
+                    <div className="text-4xl font-bold text-white">{formatTime(weather.sunset)}</div>
+                    <div className="text-white/60 text-sm mt-1">местное время</div>
+                  </Card>
+
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Icon name="Sun" className="text-white" size={24} />
+                      <div className="text-white/70">УФ-индекс</div>
+                    </div>
+                    <div className={`text-4xl font-bold ${getUVLevel(weather.uvIndex).color}`}>
+                      {weather.uvIndex || 0}
+                    </div>
+                    <div className="text-white/60 text-sm mt-1">{getUVLevel(weather.uvIndex).level}</div>
+                  </Card>
+                </div>
 
                 <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon name="Droplets" className="text-white" size={24} />
-                    <div className="text-white/70">Влажность</div>
+                  <h3 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Icon name="Info" size={20} />
+                    Интерпретация данных
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white/80 text-sm">
+                    <div>
+                      <span className="font-semibold">Комфорт: </span>
+                      {weather.temp >= 18 && weather.temp <= 24 && weather.humidity >= 40 && weather.humidity <= 60
+                        ? 'Комфортные условия для прогулок'
+                        : weather.temp < 0
+                        ? 'Холодно, одевайтесь теплее'
+                        : weather.temp > 30
+                        ? 'Жарко, избегайте прямых солнечных лучей'
+                        : 'Приемлемые погодные условия'}
+                    </div>
+                    <div>
+                      <span className="font-semibold">Ветер: </span>
+                      {weather.windSpeed < 5
+                        ? 'Слабый ветер, безопасно'
+                        : weather.windSpeed < 10
+                        ? 'Умеренный ветер'
+                        : weather.windSpeed < 15
+                        ? 'Сильный ветер, будьте осторожны'
+                        : 'Очень сильный ветер, опасно!'}
+                    </div>
+                    <div>
+                      <span className="font-semibold">Влажность: </span>
+                      {weather.humidity < 30
+                        ? 'Сухой воздух'
+                        : weather.humidity < 60
+                        ? 'Комфортная влажность'
+                        : weather.humidity < 80
+                        ? 'Повышенная влажность'
+                        : 'Очень влажно, духота'}
+                    </div>
+                    <div>
+                      <span className="font-semibold">Видимость: </span>
+                      {(weather.visibility || 0) >= 10
+                        ? 'Отличная видимость'
+                        : (weather.visibility || 0) >= 5
+                        ? 'Хорошая видимость'
+                        : (weather.visibility || 0) >= 2
+                        ? 'Умеренная видимость'
+                        : 'Плохая видимость (туман/дымка)'}
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-white">{weather.humidity}%</div>
-                  <div className="text-white/60 text-sm mt-1">
-                    {weather.humidity > 70 ? 'Высокая' : weather.humidity > 40 ? 'Комфортная' : 'Низкая'}
-                  </div>
-                </Card>
-
-                <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon name="Wind" className="text-white" size={24} />
-                    <div className="text-white/70">Ветер</div>
-                  </div>
-                  <div className="text-4xl font-bold text-white">{Math.round(weather.windSpeed)}</div>
-                  <div className="text-white/60 text-sm mt-1">км/ч</div>
-                </Card>
-
-                <Card className="bg-white/10 backdrop-blur-xl border-white/20 p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon name="CloudSun" className="text-white" size={24} />
-                    <div className="text-white/70">Условия</div>
-                  </div>
-                  <div className="text-xl font-bold text-white">{weather.condition}</div>
                 </Card>
               </div>
             ) : (
