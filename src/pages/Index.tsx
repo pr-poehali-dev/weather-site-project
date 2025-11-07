@@ -14,7 +14,6 @@ import WeatherCharts from '@/components/WeatherCharts';
 import WeeklyForecast from '@/components/WeeklyForecast';
 import WeatherMap from '@/components/WeatherMap';
 import NotificationSettings from '@/components/NotificationSettings';
-import FinancialTicker from '@/components/FinancialTicker';
 import NewsModal from '@/components/NewsModal';
 import CitiesGrid from '@/components/CitiesGrid';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
