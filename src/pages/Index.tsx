@@ -12,8 +12,9 @@ import WeatherDetailsWidgets from '@/components/WeatherDetailsWidgets';
 import WeatherCharts from '@/components/WeatherCharts';
 import WeeklyForecast from '@/components/WeeklyForecast';
 import WeatherMap from '@/components/WeatherMap';
+import NotificationSettings from '@/components/NotificationSettings';
 import { useWeatherMonitor } from '@/hooks/useWeatherMonitor';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { usePushNotifications, NotificationSettings as NotificationSettingsType } from '@/hooks/usePushNotifications';
 
 interface WeatherData {
   temp: number;
@@ -83,12 +84,26 @@ const Index = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [showComparison, setShowComparison] = useState(false);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettingsType>(() => {
+    const saved = localStorage.getItem('weatherNotificationSettings');
+    return saved ? JSON.parse(saved) : {
+      enabled: true,
+      temperature: true,
+      wind: true,
+      storm: true,
+      snow: true,
+      rain: true,
+      tempThreshold: 5,
+      windThreshold: 10,
+    };
+  });
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const favoritesRef = useRef<HTMLDivElement>(null);
 
   useWeatherMonitor(favorites);
-  usePushNotifications(weather);
+  usePushNotifications(weather, notificationSettings);
 
   useEffect(() => {
     const fetchWeather = async (lat: number, lon: number) => {
@@ -329,6 +344,13 @@ const Index = () => {
               <span className={`text-2xl font-bold ${textColor}`}>{Math.round(weather.temp)}°</span>
             </div>
             <WeatherNotifications isDarkTheme={isDarkTheme} />
+            <button
+              onClick={() => setShowNotificationSettings(true)}
+              className={`p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
+              title="Настройки уведомлений"
+            >
+              <Icon name="Bell" className={textColor} size={24} />
+            </button>
             <button
               onClick={toggleTheme}
               className={`p-3 ${cardBg} backdrop-blur-xl ${borderColor} border-2 rounded-full hover:scale-110 transition-all`}
@@ -683,6 +705,17 @@ const Index = () => {
           cities={favorites}
           onClose={() => setShowComparison(false)}
           isDarkTheme={isDarkTheme}
+        />
+      )}
+
+      {showNotificationSettings && (
+        <NotificationSettings
+          onClose={() => setShowNotificationSettings(false)}
+          onSettingsChange={(settings) => {
+            setNotificationSettings(settings);
+            localStorage.setItem('weatherNotificationSettings', JSON.stringify(settings));
+          }}
+          currentSettings={notificationSettings}
         />
       )}
     </div>
